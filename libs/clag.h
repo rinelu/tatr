@@ -1,5 +1,5 @@
 /*
-   clag - v2.0.0 - Public Domain - Single-header CLI parser
+   clag - v2.1.0 - Public Domain - Single-header CLI parser
 
    A tiny argument parsing library for C.
 
@@ -252,6 +252,48 @@ static ClagContext g_clag;
 // ---------------
 // Private helpers
 // ---------------
+
+typedef void (*Clag__WriteFn)(void *ctx, const char *str);
+
+typedef struct {
+    char *buf;
+    int *pos;
+    int *rem;
+} Clag__BufCtx;
+
+void clag__buf_write(void *ctx, const char *str)
+{
+    Clag__BufCtx *b = (Clag__BufCtx*)ctx;
+    int n = snprintf(b->buf + *b->pos, (size_t)*b->rem, "%s", str);
+    if (n > 0 && n < *b->rem) {
+        *b->pos += n;
+        *b->rem -= n;
+    }
+}
+
+static void clag__writef(Clag__WriteFn fn, void *ctx, const char *fmt, ...)
+{
+    char buf[128];
+    va_list ap;
+    va_start(ap, fmt);
+    int n = vsnprintf(buf, sizeof(buf), fmt, ap);
+    va_end(ap);
+
+    if (n <= 0) return;
+
+    if ((size_t)n < sizeof(buf)) {
+        fn(ctx, buf);
+    } else {
+        // allocate exact size if needed
+        char *tmp = (char*)malloc((size_t)n + 1);
+        if (!tmp) return;
+        va_start(ap, fmt);
+        vsnprintf(tmp, (size_t)n + 1, fmt, ap);
+        va_end(ap);
+        fn(ctx, tmp);
+        free(tmp);
+    }
+}
 
 static Clag *clag__alloc(ClagType type, const char *name, char sc, const char *desc)
 {
@@ -874,44 +916,39 @@ void clag_print_error(FILE *s)
 }
 
 // Print the default value of a flag in a human-readable form.
-static void clag__print_default(FILE *s, const Clag *f)
+static void clag__print_default_cb(Clag__WriteFn out, void *ctx, const Clag *f)
 {
     switch (f->type) {
     case CLAG_TYPE_BOOL:
-        fprintf(s, f->def.as_bool ? "true" : "false");
+        out(ctx, f->def.as_bool ? "true" : "false");
         break;
     case CLAG_TYPE_INT64:
-        fprintf(s, "%" PRId64, f->def.as_int64);
+        clag__writef(out, ctx, "%" PRId64, f->def.as_int64);
         break;
     case CLAG_TYPE_UINT64:
-        fprintf(s, "%" PRIu64, f->def.as_uint64);
+        clag__writef(out, ctx, "%" PRIu64, f->def.as_uint64);
         break;
     case CLAG_TYPE_DOUBLE:
-        fprintf(s, "%g", f->def.as_double);
+        clag__writef(out, ctx, "%g", f->def.as_double);
         break;
     case CLAG_TYPE_FLOAT:
-        fprintf(s, "%g", (double)f->def.as_float);
+        clag__writef(out, ctx, "%g", (double)f->def.as_float);
         break;
     case CLAG_TYPE_SIZE:
-        if (f->def_str)
-            fprintf(s, "%s", f->def_str);
-        else
-            fprintf(s, "%zu", f->def.as_size);
+        if (f->def_str) out(ctx, f->def_str);
+        else clag__writef(out, ctx, "%zu", f->def.as_size);
         break;
     case CLAG_TYPE_STR:
-        if (f->def.as_str)
-            fprintf(s, "\"%s\"", f->def.as_str);
-        else
-            fprintf(s, "\"\"");
+        if (f->def.as_str) clag__writef(out, ctx, "\"%s\"", f->def.as_str);
+        else out(ctx, "\"\"");
         break;
     case CLAG_TYPE_LIST:
-        fprintf(s, "[]");
+        out(ctx, "[]");
         break;
     default:
         break;
     }
-}
- 
+} 
 static const char *clag__type_name(ClagType t)
 {
     switch (t) {
@@ -992,21 +1029,17 @@ void clag_print_options(FILE *s)
         if (n > 0) {                                              \
             pos += n;                                             \
             rem -= n;                                             \
-        }} while(0)
+        }} while(0) 
 
         if (f->desc) DAPP("%s", f->desc);
 
         // Default (not for list)
         if (f->type != CLAG_TYPE_LIST) {
             DAPP(" [default: ");
-            // Capture clag__print_default into buffer
-            FILE *tmp = fmemopen(desc_buf + pos, (size_t)rem, "w");
-            if (tmp) {
-                clag__print_default(tmp, f);
-                fclose(tmp);
-                int written = (int)strlen(desc_buf + pos);
-                pos += written; rem -= written;
-            }
+
+            Clag__BufCtx b = { desc_buf, &pos, &rem };
+            clag__print_default_cb(clag__buf_write, &b, f);
+
             DAPP("]");
         }
         if (f->required)   DAPP(" (required)");
@@ -1031,6 +1064,12 @@ void clag_print_help(FILE *s)
 
 /*
 # Changelog
+
+      2.1.0 (2026-04-04)
+                     - Remove fmemopen (Windows compatibility)
+                     - Add callback-based writer for formatting
+                     - Improve help formatting
+                     - Fix buffer handling in description builder
 
       2.0.0 (2026-03-29)
                      - BREAKING: New API with short flag support (`char sc`)

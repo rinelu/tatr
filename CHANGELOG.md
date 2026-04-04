@@ -15,6 +15,10 @@ We follow https://semver.org/:
 
 # Changelog
 
+## 1.1.0 (2026-04-04)
+
+- Make clag.h windows compatible
+
 ## 1.0.0 (2026-04-04)
 
 - Initial release of tatr
