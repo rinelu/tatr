@@ -16,6 +16,12 @@
 
 #define printf(...) {}
 
+#ifdef _WIN32
+#define FS_SEP "\\"
+#else
+#define FS_SEP "/"
+#endif
+
 const char *fs__path(const char *first, ...)
 {
     String_Builder sb = {0};
@@ -27,7 +33,7 @@ const char *fs__path(const char *first, ...)
 
     const char *part;
     while ((part = va_arg(ap, const char *))) {
-        sb_append_cstr(&sb, "/");
+        sb_append_cstr(&sb, FS_SEP);
         sb_append_cstr(&sb, part);
     }
 
@@ -80,7 +86,7 @@ bool fs_unique_path(const char *dir, const char *filename, String_Builder *out)
         out->count = 0;
 
         sb_append_cstr(out, dir);
-        sb_append_cstr(out, "/");
+        sb_append_cstr(out, FS_SEP);
 
         sb_appendf(out, SV_Fmt"-%d"SV_Fmt, SB_Arg(base), i, SB_Arg(ext));
 
@@ -153,7 +159,7 @@ bool fs_copy_file(const char *src_path, const char *dst_path)
     size_t buf_size = 32*1024;
     char *buf = (char*)realloc(NULL, buf_size);
     assert(buf != NULL && "memory not enough");
-    bool result = true;
+    bool result = false;
 
     fd = open(src_path, O_RDONLY);
     if (fd < 0) {
@@ -193,10 +199,11 @@ bool fs_copy_file(const char *src_path, const char *dst_path)
         }
     }
 
+    result = true;
 defer:
     free(buf);
-    close(fd);
-    close(dst_fd);
+    if (fd >= 0)     close(fd);
+    if (dst_fd >= 0) close(dst_fd);
     return result;
 #endif
 }
@@ -221,12 +228,13 @@ bool fs_read_file(const char *path, String_Builder *sb)
 
     new_count = sb->count + (size_t)m;
     if (new_count > sb->capacity) {
-        sb->items = DELCTYPE(sb->items)realloc(sb->items, new_count);
+        sb->items = DELCTYPE(sb->items)realloc(sb->items, new_count + 1);
         assert(sb->items != NULL && "memory not enough");
         sb->capacity = new_count;
     }
 
-    fread(sb->items + sb->count, (size_t)m, 1, f);
+    size_t n = fread(sb->items + sb->count, 1, (size_t)m, f);
+    if (n != (size_t)m) goto defer;
     if (ferror(f)) goto defer;
 
     sb->count = new_count;
@@ -311,7 +319,7 @@ bool fs_delete_file(const char *path)
         }
         break;
     default:
-        pritnf("Unreachable: File_Type");
+        printf("Unreachable: File_Type");
         abort();
     }
     return true;
@@ -362,6 +370,7 @@ bool fs_delete_recursive(const char *path)
         }
 #endif
         result = true;
+        goto defer;
     }
 
 #ifdef _WIN32

@@ -15,6 +15,15 @@ We follow https://semver.org/:
 
 # Changelog
 
+## 1.2.0 (2026-04-04)
+
+- Improve fs layer cross-platform support (Windows compatibility)
+- Fix recursive delete logic (avoid double deletion)
+- Fix file descriptor handling (`close(-1)` guard)
+- Fix file reading logic (`fread` usage and buffer sizing)
+- Add missing Windows includes and API usage fixes
+- Minor internal cleanup and bug fixes
+
 ## 1.1.0 (2026-04-04)
 
 - Make clag.h windows compatible
