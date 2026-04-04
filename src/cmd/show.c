@@ -1,0 +1,50 @@
+#include "cmd.h"
+
+int cmd_show(int argc, char **argv)
+{
+    bool *raw_flag = clag_bool("raw", 'r', false, "Print raw issue.tatr without decoration");
+    clag_usage("<id> [options]");
+
+    if (!clag_parse(argc, argv)) {
+        clag_print_error(stderr);
+        clag_print_options(stderr);
+        return 1;
+    }
+
+    if (clag_rest_argc() < 1) {
+        ui_error("tatr show: missing issue ID");
+        ui_msg("usage: tatr show <id> [--raw]");
+        return 1;
+    }
+
+    const char *id = clag_rest_argv()[0];
+
+    int result = 1;
+    size_t tmark = temp_save();
+    Issue iss;
+    if (!issue_load(id, &iss)) {
+        ui_error("tatr: issue '%s' not found", id);
+        goto defer;
+    }
+
+    result = 0;
+    if (*raw_flag) {
+        fputs(iss.raw.data, stdout);
+        goto defer;
+    }
+
+    ui_print_issue_full(&iss);
+
+    File_Paths files = {0};
+    if (fs_read_dir(iss.attach_path, &files)) {
+        ui_msg("\nAttachments (%d):", files.count);
+        for (size_t i = 0; i < files.count; i++)
+            ui_msg("  %s", files.items[i]);
+        da_free(files);
+    }
+
+defer:
+    issue_free(&iss);
+    temp_rewind(tmark);
+    return result;
+}

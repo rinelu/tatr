@@ -1,0 +1,64 @@
+name: Tatr Build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+
+jobs:
+  macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build (Makefile)
+        run: |
+          make BUILD=Release WARNINGS=1 -j
+          make clean
+          make BUILD=Debug ASAN=1 UBSAN=1 -j
+
+  ubuntu:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        cc: [gcc, clang]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential clang make
+
+      - name: Build (Makefile)
+        env:
+          CC: ${{ matrix.cc }}
+        run: |
+          make BUILD=Release WARNINGS=1 -j
+          make clean
+          make BUILD=Debug ASAN=1 UBSAN=1 -j
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >
+            mingw-w64-x86_64-gcc
+            make
+
+      - name: Build (Makefile)
+        shell: msys2 {0}
+        run: |
+          make BUILD=Release WARNINGS=1 -j
+          make clean
+          make BUILD=Debug -j
