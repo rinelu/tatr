@@ -18,6 +18,7 @@ We follow https://semver.org/:
 ## 1.2.0 (2026-04-04)
 
 - Improve fs layer cross-platform support (Windows compatibility)
+- Fix file size detection on Windows (`_ftelli64` usage)
 - Fix recursive delete logic (avoid double deletion)
 - Fix file descriptor handling (`close(-1)` guard)
 - Fix file reading logic (`fread` usage and buffer sizing)

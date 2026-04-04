@@ -221,7 +221,7 @@ bool fs_read_file(const char *path, String_Builder *sb)
 #ifndef _WIN32
     m = ftell(f);
 #else
-    long m = _telli64(_fileno(f));
+    m = _telli64(_fileno(f));
 #endif
     if (m < 0)                     goto defer;
     if (fseek(f, 0, SEEK_SET) < 0) goto defer;
