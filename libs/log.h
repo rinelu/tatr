@@ -264,7 +264,7 @@ static void log__vlog(Log_Level lvl, const char *file, int line, const char *fmt
 #define log_error(...) log__log(LOG_ERROR, __FILE__, __LINE__, __VA_ARGS__)
 #define log_fatal(...) log__log(LOG_FATAL, __FILE__, __LINE__, __VA_ARGS__)
 
-static inline void log__log(Log_Level lvl, const char *file, int line, const char *fmt, ...) LOG_FMT(4, 5);
+// static inline void log__log(Log_Level lvl, const char *file, int line, const char *fmt, ...) LOG_FMT(4, 5);
 static inline void log__log(Log_Level lvl, const char *file, int line, const char *fmt, ...) 
 {
     va_list ap;
