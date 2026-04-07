@@ -12,8 +12,8 @@ int cmd_show(int argc, char **argv)
     }
 
     if (clag_rest_argc() < 1) {
-        ui_error("tatr show: missing issue ID");
-        ui_msg("usage: tatr show <id> [--raw]");
+        log_error("tatr show: missing issue ID");
+        log_msg("usage: tatr show <id> [--raw]");
         return 1;
     }
 
@@ -23,7 +23,7 @@ int cmd_show(int argc, char **argv)
     size_t tmark = temp_save();
     Issue iss;
     if (!issue_load(id, &iss)) {
-        ui_error("tatr: issue '%s' not found", id);
+        log_error("tatr: issue '%s' not found", id);
         goto defer;
     }
 
@@ -37,9 +37,9 @@ int cmd_show(int argc, char **argv)
 
     File_Paths files = {0};
     if (fs_read_dir(iss.attach_path, &files)) {
-        ui_msg("\nAttachments (%d):", files.count);
+        log_msg("\nAttachments (%d):", files.count);
         for (size_t i = 0; i < files.count; i++)
-            ui_msg("  %s", files.items[i]);
+            log_msg("  %s", files.items[i]);
         da_free(files);
     }
 

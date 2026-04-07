@@ -121,7 +121,7 @@ int cmd_status(int argc, char **argv)
 
     File_Paths ids = {0};
     if (!fs_read_dir(".tatr/issues", &ids)) {
-        ui_error("cannot read issues directory");
+        log_error("cannot read issues directory");
         return 1;
     }
 
@@ -179,11 +179,11 @@ int cmd_status(int argc, char **argv)
     da_sort(&issues, cmp_recent);
     da_sort(&tags,   cmp_tag_count);
 
-    ui_msg("On .tatr/\n");
-    ui_msg("%zu issue%s  --  %s%zu open%s  %s%zu in-progress%s  %s%zu closed%s  %s(%.0f%% complete)%s",
+    log_msg("On .tatr/\n");
+    log_msg("%zu issue%s  --  %s%zu open%s  %s%zu in-progress%s  %s%zu closed%s  %s(%.0f%% complete)%s",
         c.total, c.total == 1 ? "" : "s",
-        A_FG_GREEN, c.open, A_RESET,
-        A_FG_BLUE, c.in_progress, A_RESET,
+        A_GREEN, c.open, A_RESET,
+        A_BLUE, c.in_progress, A_RESET,
         A_DIM, c.closed, A_RESET,
         A_DIM, c.total > 0 ? (double)c.closed / (double)c.total * 100.0 : 0.0, A_RESET);
 
@@ -195,13 +195,13 @@ int cmd_status(int argc, char **argv)
         if (!is_crit && !sv_eq_cstr(iss->priority, "high"))
             continue;
         if (!has_high) { 
-            ui_msg("\n%sHigh priority:%s", A_BOLD_RED, A_RESET);
+            log_msg("\n%sHigh priority:%s", A_BOLD_RED, A_RESET);
             has_high = true;
         }
-        const char *pcol = is_crit ? A_FG_RED : A_FG_YELLOW;
-        ui_msg("  %s%s%s  "SV_Fmt, pcol, iss->id, A_RESET, SV_Arg(iss->title));
+        const char *pcol = is_crit ? A_RED : A_YELLOW;
+        log_msg("  %s%s%s  "SV_Fmt, pcol, iss->id, A_RESET, SV_Arg(iss->title));
     }
-    if (!has_high) ui_msg("\n%sHigh priority:%s %s(none)%s",
+    if (!has_high) log_msg("\n%sHigh priority:%s %s(none)%s",
             A_BOLD, A_RESET, A_DIM, A_RESET);
 
     // Stale
@@ -213,54 +213,54 @@ int cmd_status(int argc, char **argv)
             continue;
 
         if (!has_stale) {
-            ui_msg("\n%sStale%s  %s(no activity >%"PRIu64" days):%s",
-                    A_BOLD_YELLOW A_RESET, A_DIM, *stale_days, A_RESET);
+            log_msg("\n%sStale%s  %s(no activity >%"PRIu64" days):%s",
+                    log_seq(A__BOLD_YELLOW A__RESET), A_DIM, *stale_days, A_RESET);
             has_stale = true;
         }
-        ui_msg("  %s%s%s  "SV_Fmt"  %s(%.0fd)%s", 
-                A_FG_YELLOW, iss->id, A_RESET,
+        log_msg("  %s%s%s  "SV_Fmt"  %s(%.0fd)%s", 
+                A_YELLOW, iss->id, A_RESET,
                 SV_Arg(iss->title), 
                 A_DIM, days, A_RESET);
     }
-    if (!has_stale) ui_msg("\n%sStale:%s %s(none)%s", A_BOLD, A_RESET, A_DIM, A_RESET);
+    if (!has_stale) log_msg("\n%sStale:%s %s(none)%s", A_BOLD, A_RESET, A_DIM, A_RESET);
 
-    ui_msg("\n%sRecent activity:%s" A_BOLD, A_RESET);
+    log_msg("\n%sRecent activity:%s", A_BOLD, A_RESET);
     if (issues.count == 0) {
-        ui_msg("  %s(no issues)%s", A_DIM, A_RESET);
+        log_msg("  %s(no issues)%s", A_DIM, A_RESET);
     } else {
         for (size_t i = 0; i < issues.count && i < *limit; i++) {
             IssueInfo *iss = &issues.items[i];
             double days = difftime(now, parse_iso(iss->updated)) / 86400.0;
             if (days < 1.0)
-                ui_msg("  %s%s%s  "SV_Fmt"  %stoday%s",
+                log_msg("  %s%s%s  "SV_Fmt"  %stoday%s",
                        A_DIM, iss->id, A_RESET,
                        SV_Arg(iss->title),
-                       A_FG_GREEN, A_RESET);
+                       A_GREEN, A_RESET);
             else
-                ui_msg("  %s%s%s  "SV_Fmt"  %s%.0fd%s",
+                log_msg("  %s%s%s  "SV_Fmt"  %s%.0fd%s",
                        A_DIM, iss->id, A_RESET,
                        SV_Arg(iss->title),
                        A_DIM, days, A_RESET);
         }
     }
 
-    ui_msg("\n%sTop tags:%s", A_BOLD, A_RESET);
+    log_msg("\n%sTop tags:%s", A_BOLD, A_RESET);
     if (tags.count == 0) {
-        ui_msg("%s  (none)%s", A_DIM, A_RESET);
+        log_msg("%s  (none)%s", A_DIM, A_RESET);
     } else {
         String_Builder row = {0};
         for (size_t i = 0; i < tags.count && i < 5; i++) {
             if (i > 0) sb_append_cstr(&row, "    ");
             sb_appendf(&row, "%s"SV_Fmt"%s  %sx%zu%s",
-                    A_FG_CYAN, SV_Arg(tags.items[i].tag), A_RESET,
+                    A_CYAN, SV_Arg(tags.items[i].tag), A_RESET,
                     A_DIM, tags.items[i].count, A_RESET);
         }
         sb_append_null(&row);
-        ui_msg("  %s", row.items);
+        log_msg("  %s", row.items);
         sb_free(row);
     }
 
-    ui_msg("");
+    log_msg("");
 
     da_free(ids);
     da_free(issues);

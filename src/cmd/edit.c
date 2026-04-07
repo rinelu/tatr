@@ -29,13 +29,13 @@ int cmd_edit(int argc, char **argv)
     }
 
     if (clag_rest_argc() < 1) {
-        ui_error("missing issue ID");
+        log_error("missing issue ID");
         return 1;
     }
 
     const char *id = clag_rest_argv()[0];
     if (!str_in(*field, EDITABLE_FIELDS)) {
-        ui_error("unknown field '%s' (use: title | status | priority | tags)", *field);
+        log_error("unknown field '%s' (use: title | status | priority | tags)", *field);
         return 1;
     }
 
@@ -43,26 +43,26 @@ int cmd_edit(int argc, char **argv)
     int result = 1;
     Issue iss;
     if (!issue_load(id, &iss)) {
-        ui_error("issue '%s' not found", id);
+        log_error("issue '%s' not found", id);
         goto defer;
     }
 
     String_View old = get_field(&iss, *field);
     if (sv_eq(old, sv_from_cstr(*value))) {
-        ui_warn("no change: '%s' is already '%s'", *field, *value);
+        log_warn("no change: '%s' is already '%s'", *field, *value);
         result = 0;
         goto defer;
     }
 
     if (!issue_replace_field(&iss, *field, *value)) {
-        ui_error("failed to update '%s'", *field);
+        log_error("failed to update '%s'", *field);
         goto defer;
     }
 
-    ui_info("Updated %s:", *field);
-    ui_msg("  - old: "SV_Fmt, SV_Arg(old));
-    ui_msg("  - new: %s", *value);
-    ui_msg("  issue: %s", id);
+    log_info("Updated %s:", *field);
+    log_msg("  - old: "SV_Fmt, SV_Arg(old));
+    log_msg("  - new: %s", *value);
+    log_msg("  issue: %s", id);
 
     issue_save(&iss);
     result = 0;

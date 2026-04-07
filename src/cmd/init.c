@@ -12,13 +12,13 @@ int cmd_init(int argc, char **argv)
     }
 
     if (fs_file_exists(".tatr") && !*force) {
-        ui_error("tatr: .tatr already exists (use --force or -f to reinitialize)");
+        log_error("tatr: .tatr already exists (use --force or -f to reinitialize)");
         return 1;
     }
 
     fs_mkdir(".tatr");
-    if (!fs_mkdir(".tatr/issues")) {
-        ui_error("tatr: cannot create .tatr/issues");
+    if (!fs_mkdir_force(".tatr/issues", force)) {
+        log_error("tatr: cannot create .tatr/issues");
         return 1;
     }
 
@@ -34,11 +34,11 @@ int cmd_init(int argc, char **argv)
         sb_free(cfg);
 
         if (!ok) {
-            ui_error("tatr: cannot write .tatr/config");
+            log_error("tatr: cannot write .tatr/config");
             return 1;
         }
     }
 
-    ui_msg("Initialized empty tatr repository in .tatr/\n");
+    log_msg("Initialized empty tatr repository in .tatr/\n");
     return 0;
 }

@@ -13,7 +13,17 @@ We follow https://semver.org/:
 - Changes to issue file format are considered **MAJOR**
 - Command behavior should remain backward-compatible within MINOR
 
-# Changelog
+## 1.3.0 (2026-04-07)
+
+- Add new logging system (`log.h`) with levels, colors, and optional file output
+- Replace all `ui_*` calls with `log_*` across commands
+- Simplify UI layer (delegate output to logger)
+- Add `log_confirm()` for prompts
+- Add `fs_mkdir_force()` with force support
+- Fix recursive delete path handling and memory safety
+- Fix `close` command result handling
+- Add test suite (framework + command coverage)
+- Minor CLI consistency and internal cleanup
 
 ## 1.2.0 (2026-04-04)
 

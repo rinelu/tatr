@@ -16,7 +16,7 @@
 inline static bool require_repo(void)
 {
     if (!fs_file_exists(".tatr/issues")) {
-        ui_error("tatr: not a tatr repository (run `tatr init` first)");
+        log_error("tatr: not a tatr repository (run `tatr init` first)");
         return false;
     }
     return true;
@@ -87,24 +87,24 @@ static const Command *find_command(const char *name)
 
 static void print_global_help(void)
 {
-    ui_msg("");
-    ui_msg("tatr %s - tiny issue tracker\n", TATR_VERSION);
-    ui_msg("Usage: tatr <command> [options]\n");
-    ui_msg("Commands:");
+    log_msg("");
+    log_msg("tatr %s - tiny issue tracker\n", TATR_VERSION);
+    log_msg("Usage: tatr <command> [options]\n");
+    log_msg("Commands:");
     for (int i = 0; i < COMMANDS_COUNT; i++) {
         if (commands[i].summary == NULL) {
-            ui_msg("\n  %s", commands[i].name);
+            log_msg("\n  %s", commands[i].name);
             continue;
         }
-        ui_msg("    %-12s  %s", commands[i].name, commands[i].summary);
+        log_msg("    %-12s  %s", commands[i].name, commands[i].summary);
     }
-    ui_msg("\nRun `tatr help <command>` for per-command help.\n");
+    log_msg("\nRun `tatr help <command>` for per-command help.\n");
 }
 
 static int cmd_version(int argc, char **argv)
 {
     (void)argc; (void)argv;
-    ui_info("tatr %s", TATR_VERSION);
+    log_info("tatr %s", TATR_VERSION);
     return 0;
 }
 
@@ -117,7 +117,7 @@ static int cmd_help(int argc, char **argv)
 
     const Command *c = find_command(argv[1]);
     if (!c) {
-        ui_error("tatr: unknown command '%s'", argv[1]);
+        log_error("tatr: unknown command '%s'", argv[1]);
         return 1;
     }
     char *help_argv[] = { (char *)c->name, "--help", NULL };

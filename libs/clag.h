@@ -74,6 +74,7 @@
 #include <string.h>
 #include <errno.h>
 #include <float.h>
+#include <stdarg.h>
 
 #ifndef CLAG_CAP
 #define CLAG_CAP 256

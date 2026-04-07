@@ -20,13 +20,13 @@ int cmd_new(int argc, char **argv)
 
     const char *valid_priorities[] = { "low", "normal", "high", "critical", NULL };
     if (!str_in(*priority, valid_priorities)) {
-        ui_error("Invalid priority '%s'. Use: low | normal | high | critical", *priority);
+        log_error("Invalid priority '%s'. Use: low | normal | high | critical", *priority);
         return 1;
     }
 
     const char *valid_statuses[] = { "open", "closed", "in-progress", "wontfix", NULL };
     if (!str_in(*status, valid_statuses)) {
-        ui_error("Invalid status '%s'. Use: open | closed | in-progress | wontfix", *status);
+        log_error("Invalid status '%s'. Use: open | closed | in-progress | wontfix", *status);
         return 1;
     }
 
@@ -40,20 +40,20 @@ int cmd_new(int argc, char **argv)
     const char *path = fs_path(".tatr/issues", id);
 
     if (!fs_mkdir(path)) {
-        ui_error("Cannot create issue directory for '%s'", id);
+        log_error("Cannot create issue directory for '%s'", id);
         goto defer;
     }
 
     path = fs_path(".tatr/issues", id, "attachments");
     if (!fs_mkdir(path)) {
-        ui_error("Cannot create attachments directory for '%s'", id);
+        log_error("Cannot create attachments directory for '%s'", id);
         goto defer;
     }
 
     String_Builder body_text = {0};
     if (*file) {
         if (!fs_read_file(*file, &body_text)) {
-            ui_error("Cannot read body from '%s'", *file);
+            log_error("Cannot read body from '%s'", *file);
             goto defer;
         }
     } else if (*body) {
@@ -88,11 +88,11 @@ int cmd_new(int argc, char **argv)
     path = fs_path(".tatr/issues", id, "issue.tatr");
     bool ok = fs_write_file(path, content.items, content.count - 1);
     if (!ok) {
-        ui_error("Cannot write issue file for '%s'", id);
+        log_error("Cannot write issue file for '%s'", id);
         goto defer;
     }
 
-    ui_info("Created issue %s", id);
+    log_info("Created issue %s", id);
     result = 0;
 defer:
     sb_free(content);

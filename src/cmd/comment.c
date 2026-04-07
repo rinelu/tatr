@@ -15,14 +15,14 @@ int cmd_comment(int argc, char **argv)
     }
 
     if (clag_rest_argc() < 1) {
-        ui_error("Missing issue ID");
+        log_error("Missing issue ID");
         return 1;
     }
 
     const char *id = clag_rest_argv()[0];
     Issue iss;
     if (!issue_load(id, &iss)) {
-        ui_error("Issue '%s' not found", id);
+        log_error("Issue '%s' not found", id);
         return 1;
     }
 
@@ -43,11 +43,11 @@ int cmd_comment(int argc, char **argv)
     sb_append_null(&iss.raw_sb);
 
     if (!issue_save(&iss)) {
-        ui_error("Cannot write comment to issue %s", id);
+        log_error("Cannot write comment to issue %s", id);
         goto defer;
     }
 
-    ui_info("Comment added to issue %s", id);
+    log_info("Comment added to issue %s", id);
     result = 0;
 
 defer:

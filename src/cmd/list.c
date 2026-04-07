@@ -67,16 +67,16 @@ static bool list__parse_opts(int argc, char **argv, ListOptions *opt)
 
 int cmd_list(int argc, char **argv)
 {
-    if (!require_repo()) return 1;
-
     ListOptions opt = {0};
     if (!list__parse_opts(argc, argv, &opt)) return 1;
+
+    if (!require_repo()) return 1;
 
     int result = 1;
     size_t tmark = temp_save(); 
     File_Paths ids = {0};
     if (!fs_read_dir(".tatr/issues", &ids)) {
-        ui_error("cannot read issues directory");
+        log_error("cannot read issues directory");
         goto defer;
     }
 
@@ -101,7 +101,7 @@ int cmd_list(int argc, char **argv)
         if (opt.limit > 0 && shown >= opt.limit) break;
     }
 
-    if (shown == 0) ui_msg("(no issues)");
+    if (shown == 0) log_msg("(no issues)");
 
     result = 0;
 defer:
