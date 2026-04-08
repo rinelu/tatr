@@ -29,7 +29,7 @@ int cmd_show(int argc, char **argv)
 
     result = 0;
     if (*raw_flag) {
-        fputs(iss.raw.data, stdout);
+        log_msg(SV_Fmt, SV_Arg(iss.raw));
         goto defer;
     }
 
@@ -37,7 +37,7 @@ int cmd_show(int argc, char **argv)
 
     File_Paths files = {0};
     if (fs_read_dir(iss.attach_path, &files)) {
-        log_msg("\nAttachments (%d):", files.count);
+        log_msg("\nAttachments (%zu):", files.count);
         for (size_t i = 0; i < files.count; i++)
             log_msg("  %s", files.items[i]);
         da_free(files);

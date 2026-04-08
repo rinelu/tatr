@@ -1,8 +1,9 @@
+#include <stdint.h>
 #define CLAG_IMPLEMENTATION
 #include "../libs/clag.h"
 
 #define LOG_GLOBAL
-#define LOG_IMPL_GLOBAL
+#define LOG_IMPLEMENTATION
 
 #include "test_framework.h"
 
@@ -21,13 +22,20 @@ void suite_status_meta(void);
 
 int main(int argc, char **argv)
 {
-    bool *dont_delete = clag_bool("delete_fail_tmp", 'D', false, "Don't delete the tmp directory when failing the test");
+    bool *dont_delete  = clag_bool("delete-fail-tmp", 'D', false,        "Don't delete the tmp directory when failing the test");
+    char **out_to_file = clag_str("out-to-file",      'f', "tt_log.txt", "Output the log message to a file");
+    int64_t *jobs      = clag_int64("jobs",           'j', 4,            "Allow N jobs at once;");
     clag_parse(argc, argv);
     delete_fail_tmp = !*dont_delete;
 
-    log_init(.use_color=true);
-
+    FILE *f = NULL;
+    if (clag_was_seen("out-to-file")) {
+        f = fopen(*out_to_file, "w");
+        if (f == NULL)
+            printf("Could not open file %s for writing: %s\n", *out_to_file, strerror(errno));
+    }
     log_msg(TF_BOLD "\ntatr test suite" TF_RESET);
+    log_init(.file=f);
 
     suite_init_new();
     suite_list_show_edit();
@@ -36,9 +44,10 @@ int main(int argc, char **argv)
     suite_status_meta();
 
     tf_install_signal_handler();
-    tf_run_all_parallel(4);
+    tf_run_all_parallel((int)*jobs);
 
     int r = tf_report();
     da_free(_tf_tests);
+    if (f) fclose(f);
     return r;
 }

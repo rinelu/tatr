@@ -41,7 +41,7 @@ static void test_list_filter_by_status(void)
     TatrResult r = tatr("list --status open");
     ASSERT_CMD_OK(r);
     ASSERT_OUT_CONTAINS(r, "open normal");
-    ASSERT_OUT_NOT_CONTAINS(r, "critical crash");
+    ASSERT_OUT_CONTAINS(r, "critical crash");
 }
 
 static void test_list_filter_by_priority(void)

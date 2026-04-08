@@ -198,7 +198,7 @@ int cmd_status(int argc, char **argv)
             log_msg("\n%sHigh priority:%s", A_BOLD_RED, A_RESET);
             has_high = true;
         }
-        const char *pcol = is_crit ? A_RED : A_YELLOW;
+        const char *pcol = is_crit ? A_BOLD_RED : A_YELLOW;
         log_msg("  %s%s%s  "SV_Fmt, pcol, iss->id, A_RESET, SV_Arg(iss->title));
     }
     if (!has_high) log_msg("\n%sHigh priority:%s %s(none)%s",
@@ -214,7 +214,7 @@ int cmd_status(int argc, char **argv)
 
         if (!has_stale) {
             log_msg("\n%sStale%s  %s(no activity >%"PRIu64" days):%s",
-                    log_seq(A__BOLD_YELLOW A__RESET), A_DIM, *stale_days, A_RESET);
+                    A_BOLD_YELLOW, A_RESET, A_DIM, *stale_days, A_RESET);
             has_stale = true;
         }
         log_msg("  %s%s%s  "SV_Fmt"  %s(%.0fd)%s", 
@@ -260,7 +260,7 @@ int cmd_status(int argc, char **argv)
         sb_free(row);
     }
 
-    log_msg("");
+    printf("\n");
 
     da_free(ids);
     da_free(issues);

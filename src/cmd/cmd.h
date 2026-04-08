@@ -87,8 +87,7 @@ static const Command *find_command(const char *name)
 
 static void print_global_help(void)
 {
-    log_msg("");
-    log_msg("tatr %s - tiny issue tracker\n", TATR_VERSION);
+    log_msg("\ntatr %s - tiny issue tracker\n", TATR_VERSION);
     log_msg("Usage: tatr <command> [options]\n");
     log_msg("Commands:");
     for (int i = 0; i < COMMANDS_COUNT; i++) {

@@ -30,6 +30,7 @@ int cmd_attachls(int argc, char **argv)
         goto defer;
     }
 
+    result = 0;
     if (files.count == 0) {
         log_msg("(no attachments)");
         goto defer;
@@ -38,8 +39,6 @@ int cmd_attachls(int argc, char **argv)
     log_msg("Attachments of issue '"SV_Fmt"'", SV_Arg(iss.id));
     for (size_t i = 0; i < files.count; i++)
         log_msg("  - %s", files.items[i]);
-
-    result = 0;
 
 defer:
     issue_free(&iss);

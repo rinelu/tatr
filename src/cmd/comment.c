@@ -40,7 +40,6 @@ int cmd_comment(int argc, char **argv)
     sb_append_cstr(&iss.raw_sb, "\n");
     sb_append_cstr(&iss.raw_sb, *message);
     sb_append_cstr(&iss.raw_sb, "\n");
-    sb_append_null(&iss.raw_sb);
 
     if (!issue_save(&iss)) {
         log_error("Cannot write comment to issue %s", id);

@@ -7,9 +7,9 @@ static void setup_issue_with_files(void)
     tatr_init();
     tatr_new_issue("--title 'attach target'", issue_id, sizeof(issue_id));
 
-    tf_write_file("report.pdf",   "FAKE_PDF_CONTENT");
+    tf_write_file("report.pdf", "FAKE_PDF_CONTENT");
     tf_write_file("screenshot.png", "FAKE_PNG_CONTENT");
-    tf_write_file("notes.txt",    "Some notes.");
+    tf_write_file("notes.txt",  "Some notes.");
 }
 
 static void test_attach_single_file(void)
@@ -39,8 +39,7 @@ static void test_attach_file_content_preserved(void)
 static void test_attach_multiple_files(void)
 {
     char args[256];
-    snprintf(args, sizeof(args),
-             "attach %s report.pdf screenshot.png notes.txt", issue_id);
+    snprintf(args, sizeof(args), "attach %s report.pdf screenshot.png notes.txt", issue_id);
     TatrResult r = tatr(args);
     ASSERT_CMD_OK(r);
 

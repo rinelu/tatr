@@ -1,7 +1,7 @@
 #define FS_SILENT
 
 #define LOG_GLOBAL
-#define LOG_IMPL_GLOBAL
+#define LOG_IMPLEMENTATION
 #include "log.h"
 
 #include <stdbool.h>

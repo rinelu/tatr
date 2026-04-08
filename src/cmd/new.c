@@ -1,5 +1,35 @@
 #include "cmd.h"
 
+static void generate_issue_id(String_Builder *out)
+{
+    char time[32];
+    timestamp_id(time, sizeof(time));
+    unsigned char rnd[3];
+    
+#if defined(_WIN32)
+    unsigned int r;
+    rand_s(&r);
+    rnd[0] = (unsigned char)(r      );
+    rand_s(&r);
+    rnd[1] = (unsigned char)(r      );
+    rand_s(&r);
+    rnd[2] = (unsigned char)(r      );
+#else
+    FILE *f = fopen("/dev/urandom", "rb");
+    if (f) {
+        fread(rnd, 1, sizeof(rnd), f);
+        fclose(f);
+    } else {
+        rnd[0] = (unsigned char)((uintptr_t)rand() ^ (uintptr_t)out);
+        rnd[1] = (unsigned char)(rand());
+        rnd[2] = (unsigned char)(rand());
+    }
+#endif
+
+    sb_appendf(out, "%s-%02x%02x%02x", time, rnd[0], rnd[1], rnd[2]);
+    sb_append_null(out);
+}
+
 int cmd_new(int argc, char **argv)
 {
     char    **title    = clag_str ("title",    't', NULL,     "Issue title");
@@ -34,19 +64,18 @@ int cmd_new(int argc, char **argv)
 
     size_t tmark = temp_save();
     int result = 1;
-    char id[32];
-    timestamp_id(id, sizeof(id));
+    String_Builder id = {0};
+    generate_issue_id(&id);
 
-    const char *path = fs_path(".tatr/issues", id);
-
+    const char *path = fs_path(".tatr/issues", id.items);
     if (!fs_mkdir(path)) {
-        log_error("Cannot create issue directory for '%s'", id);
+        log_error("Failed to create issue directory '%s'", id.items);
         goto defer;
     }
 
-    path = fs_path(".tatr/issues", id, "attachments");
+    path = fs_path(".tatr/issues", id.items, "attachments");
     if (!fs_mkdir(path)) {
-        log_error("Cannot create attachments directory for '%s'", id);
+        log_error("Cannot create attachments directory for '%s'", id.items);
         goto defer;
     }
 
@@ -85,14 +114,14 @@ int cmd_new(int argc, char **argv)
 
     sb_append_null(&content);
 
-    path = fs_path(".tatr/issues", id, "issue.tatr");
+    path = fs_path(".tatr/issues", id.items, "issue.tatr");
     bool ok = fs_write_file(path, content.items, content.count - 1);
     if (!ok) {
-        log_error("Cannot write issue file for '%s'", id);
+        log_error("Cannot write issue file for '%s'", id.items);
         goto defer;
     }
 
-    log_info("Created issue %s", id);
+    log_info("Created issue %s", id.items);
     result = 0;
 defer:
     sb_free(content);

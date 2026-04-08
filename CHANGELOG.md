@@ -16,14 +16,21 @@ We follow https://semver.org/:
 ## 1.3.0 (2026-04-07)
 
 - Add new logging system (`log.h`) with levels, colors, and optional file output
-- Replace all `ui_*` calls with `log_*` across commands
-- Simplify UI layer (delegate output to logger)
 - Add `log_confirm()` for prompts
+- Add test suite (framework + command coverage)
+- Add test flags (`--out-to-file`, `--jobs`)
 - Add `fs_mkdir_force()` with force support
 - Fix recursive delete path handling and memory safety
 - Fix `close` command result handling
-- Add test suite (framework + command coverage)
-- Minor CLI consistency and internal cleanup
+- Fix attach null-termination bug
+- Fix attachls, search exit codes
+- Fix show output + attachment count format
+- Enhance issue ID generation (timestamp + random)
+- Replace all `ui_*` calls with `log_*` across commands
+- Simplify UI layer (delegate output to logger)
+- Improve `log.h` (thread-safety, colors, file output, API cleanup)
+- Improve status formatting and colors
+- Clean up global help output
 
 ## 1.2.0 (2026-04-04)
 

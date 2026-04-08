@@ -116,7 +116,7 @@ false_match:
     }
     log_msg("(%zu result%s for '%s')", found, found == 1 ? "" : "s", clag_rest_argv()[0]);
 
-    result = 1;
+    result = 0;
 defer:
     da_free(issues);
     da_free(tokens);
