@@ -24,30 +24,35 @@ int cmd_attach(int argc, char **argv)
         return 1;
     }
 
-    // ensure attachment directory exists
     if (!fs_mkdir(iss.attach_path) && !fs_file_exists(iss.attach_path)) {
         log_error("Cannot create attachment directory");
         goto defer;
     }
 
     for (int i = 1; i < clag_rest_argc(); i++) {
-        const char *src = clag_rest_argv()[i];
+        const char *src  = clag_rest_argv()[i];
+        const char *base = fs_path_name(src);
 
         if (!fs_file_exists(src)) {
             log_error("File '%s' not found", src);
             goto defer;
         }
 
-        // extract basename
-        const char *base = fs_path_name(src);
         String_Builder dst = {0};
         if (!fs_unique_path(iss.attach_path, base, &dst)) {
             log_error("Failed to create unique path for '%s'", base);
             sb_free(dst);
             goto defer;
         }
+
         sb_append_null(&dst);
-        bool renamed = strcmp(base, strrchr(dst.items, '/') ? strrchr(dst.items, '/') + 1 : dst.items) != 0;
+
+        String_Builder expected = {0};
+        sb_append(&expected, '/');
+        sb_append_cstr(&expected, base);
+        sb_append_null(&expected);
+        bool renamed = !sv_ends_with_cstr(sb_to_sv(dst), expected.items);
+        sb_free(expected);
 
         if (!fs_copy_file(src, dst.items)) {
             log_error("Cannot copy '%s'", src);
@@ -56,12 +61,14 @@ int cmd_attach(int argc, char **argv)
         }
 
         if (renamed)
-             log_info("Attached %s -> %s (renamed, conflict resolved)", base, dst.items);
-        else log_info("Attached %s", base);
+            log_info("Attached %s -> %s (renamed, conflict resolved)", base, dst.items);
+        else
+            log_info("Attached %s", base);
 
         sb_free(dst);
     }
     result = 0;
+
 defer:
     issue_free(&iss);
     temp_rewind(tmark);

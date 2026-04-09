@@ -46,7 +46,7 @@ int main(int argc, char **argv)
     tf_run_all_parallel((int)*jobs);
 
     int r = tf_report();
-    da_free(_tf_tests);
+    tf_cleanup();
     if (f) fclose(f);
     return r;
 }

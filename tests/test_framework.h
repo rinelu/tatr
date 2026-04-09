@@ -336,6 +336,8 @@ static inline void tf_run_all_parallel(int max_workers)
             pid_t pid = fork();
             if (pid == 0) {
                 // child
+                for (int i = 0; i < max_workers; i++)
+                    free(sandbox_paths[i]);
                 free(pids);
                 free(sandbox_paths);
                 tf__run_child(t, template);
@@ -394,6 +396,18 @@ static inline void tf_run_all_parallel(int max_workers)
 done:
     free(pids);
     free(sandbox_paths);
+}
+
+// ---------------------------------------------------------------------------
+// Cleanup
+// ---------------------------------------------------------------------------
+
+static inline void tf_cleanup(void)
+{
+    da_free(_tf_tests);
+    _tf_tests.items    = NULL;
+    _tf_tests.count    = 0;
+    _tf_tests.capacity = 0;
 }
 
 // ---------------------------------------------------------------------------

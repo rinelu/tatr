@@ -30,13 +30,6 @@ target_include_directories(run_tests
 
 # ---- Define TATR_BIN ----
 
-if(TATR_BIN)
-    target_compile_definitions(run_tests
-        PRIVATE
-            TATR_BIN="${TATR_BIN}"
-    )
-endif()
-
 target_compile_definitions(run_tests
     PRIVATE
         TATR_BIN="$<TARGET_FILE:tatr>"
@@ -52,11 +45,4 @@ if(TATR_ENABLE_WARNINGS)
             -Wall -Wextra -Wshadow -Wconversion -Wstrict-prototypes
         )
     endif()
-endif()
-
-# ---- Sanitizers ----
-
-if(TATR_SANITIZERS AND NOT MSVC)
-    target_compile_options(run_tests PRIVATE ${TATR_SANITIZERS})
-    target_link_options(run_tests PRIVATE ${TATR_SANITIZERS})
 endif()

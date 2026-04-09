@@ -15,27 +15,40 @@ We follow https://semver.org/:
 
 ## 1.3.0 (2026-04-07)
 
+- Rewrite GitHub Actions to use CMake
+- Improve portability and compiler handling
+- Simplify test CMake config (remove redundant flags)
+- Ignore build-debug/ directory
+- Minor code cleanup and consistency improvements
+
 - Add new logging system (`log.h`) with levels, colors, and optional file output
-- Add `log_confirm()` for prompts
-- Add test suite (framework + command coverage)
-- Add test flags (`--out-to-file`, `--jobs`)
-- Add `fs_mkdir_force()` with force support
-- Fix recursive delete path handling and memory safety
-- Fix `close` command result handling
-- Fix attach null-termination bug
-- Fix attachls, search exit codes
-- Fix show output + attachment count format
-- Enhance issue ID generation (timestamp + random)
+- Improve `log.h` (thread-safety, colors, file output, API cleanup)
 - Replace all `ui_*` calls with `log_*` across commands
 - Simplify UI layer (delegate output to logger)
-- Improve `log.h` (thread-safety, colors, file output, API cleanup)
+- Add `log_confirm()` for prompts
+
+- Add test suite (framework + command coverage)
+- Add test flags (`--out-to-file`, `--jobs`)
+- Add proper test cleanup (`tf_cleanup`)
+- Fix test framework cleanup (prevent leaks across runs)
+
+- Add cross-platform secure RNG (`arc4random_buf`, `getrandom`, `BCryptGenRandom`)
+- Enhance issue ID generation (timestamp + random)
+- Refactor issue ID generation
+
+- Add `fs_mkdir_force()` with force support
+
+- Fix memory leak in new command (free issue ID buffer)
+- Fix potential memory leaks in attach command
+- Fix recursive delete path handling and memory safety
+- Fix close command result handling
+- Fix attach null-termination bug
+- Fix attachment rename detection logic
+- Fix attachls, search exit codes
+- Fix show output + attachment count format
+
 - Improve status formatting and colors
 - Clean up global help output
-- Rewrite GitHub Actions to use CMake
-- Add cross-platform secure RNG (`arc4random_buf`, `getrandom`, `BCryptGenRandom`)
-- Refactor issue ID generation
-- Improve portability and compiler handling
-- Minor cleanup and fixes
 
 ## 1.2.0 (2026-04-04)
 

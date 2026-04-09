@@ -132,6 +132,7 @@ int cmd_new(int argc, char **argv)
     log_info("Created issue %s", id.items);
     result = 0;
 defer:
+    sb_free(id);
     sb_free(content);
     sb_free(tags_sb);
     sb_free(body_text);
