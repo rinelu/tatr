@@ -46,6 +46,8 @@ We follow https://semver.org/:
 - Fix attachment rename detection logic
 - Fix attachls, search exit codes
 - Fix show output + attachment count format
+- Fix use-after-modification in `edit` command (preserve old field value before update)
+- Ensure proper memory handling when logging previous values
 
 - Improve status formatting and colors
 - Clean up global help output

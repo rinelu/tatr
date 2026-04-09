@@ -100,19 +100,20 @@ jobs:
           install: >
             mingw-w64-x86_64-gcc
             mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
 
       - name: Configure (Release)
         shell: msys2 {0}
         run: |
           cmake -S . -B build \
-            -G "MinGW Makefiles" \
+            -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX=/mingw64 \
             -DTATR_ENABLE_WARNINGS=ON
 
       - name: Build
         shell: msys2 {0}
-        run: cmake --build build -j
+        run: cmake --build build
 
       - name: Install
         shell: msys2 {0}
@@ -126,12 +127,12 @@ jobs:
         shell: msys2 {0}
         run: |
           cmake -S . -B build-debug \
-            -G "MinGW Makefiles" \
+            -G Ninja \
             -DCMAKE_BUILD_TYPE=Debug
 
       - name: Build (Debug)
         shell: msys2 {0}
-        run: cmake --build build-debug -j
+        run: cmake --build build-debug
 
       - name: Test (Debug)
         shell: msys2 {0}

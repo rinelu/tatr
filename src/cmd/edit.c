@@ -47,22 +47,25 @@ int cmd_edit(int argc, char **argv)
         goto defer;
     }
 
-    String_View old = get_field(&iss, *field);
-    if (sv_eq(old, sv_from_cstr(*value))) {
+    String_View old_view = get_field(&iss, *field);
+    if (sv_eq(old_view, sv_from_cstr(*value))) {
         log_warn("no change: '%s' is already '%s'", *field, *value);
         result = 0;
         goto defer;
     }
 
+    char *old_copy = sv_dup(old_view);
     if (!issue_replace_field(&iss, *field, *value)) {
+        free(old_copy);
         log_error("failed to update '%s'", *field);
         goto defer;
     }
 
     log_info("Updated %s:", *field);
-    log_msg("  - old: "SV_Fmt, SV_Arg(old));
+    log_msg("  - old: %s", old_copy);
     log_msg("  - new: %s", *value);
     log_msg("  issue: %s", id);
+    free(old_copy);
 
     issue_save(&iss);
     result = 0;
