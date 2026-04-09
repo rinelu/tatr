@@ -1,30 +1,38 @@
 #include "cmd.h"
 
+static void fill_random(unsigned char *buf, size_t len)
+{
+#if defined(__APPLE__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__)
+    arc4random_buf(buf, len);
+
+#elif defined(_WIN32)
+#pragma comment(lib, "bcrypt.lib")
+    BCryptGenRandom(NULL, buf, (ULONG)len, BCRYPT_USE_SYSTEM_PREFERRED_RNG);
+
+#else
+#include <sys/random.h>
+#if defined(__linux__) && defined(__GLIBC__) && (__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 25))
+    getrandom(buf, len, 0);
+#else
+    FILE *f = fopen("/dev/urandom", "rb");
+    if (f) {
+        fread(buf, 1, len, f);
+        fclose(f);
+        return;
+    }
+    for (size_t i = 0; i < len; i++)
+        buf[i] = (unsigned char)(rand() ^ (int)(uintptr_t)(buf + i));
+#endif
+#endif
+}
+
 static void generate_issue_id(String_Builder *out)
 {
     char time[32];
     timestamp_id(time, sizeof(time));
+
     unsigned char rnd[3];
-    
-#if defined(_WIN32)
-    unsigned int r;
-    rand_s(&r);
-    rnd[0] = (unsigned char)(r      );
-    rand_s(&r);
-    rnd[1] = (unsigned char)(r      );
-    rand_s(&r);
-    rnd[2] = (unsigned char)(r      );
-#else
-    FILE *f = fopen("/dev/urandom", "rb");
-    if (f) {
-        fread(rnd, 1, sizeof(rnd), f);
-        fclose(f);
-    } else {
-        rnd[0] = (unsigned char)((uintptr_t)rand() ^ (uintptr_t)out);
-        rnd[1] = (unsigned char)(rand());
-        rnd[2] = (unsigned char)(rand());
-    }
-#endif
+    fill_random(rnd, sizeof(rnd));
 
     sb_appendf(out, "%s-%02x%02x%02x", time, rnd[0], rnd[1], rnd[2]);
     sb_append_null(out);

@@ -45,7 +45,7 @@ ALL_SRC := $(SRC) $(CMD_SRC) $(LIB_SRC)
 OBJ := $(ALL_SRC:%.c=$(BUILD_DIR)/%.o)
 
 WARN_FLAGS := \
-	-Wall -Wextra -Wpedantic \
+	-Wall -Wextra \
 	-Wshadow -Wconversion \
 	-Wstrict-prototypes \
 	-Werror=implicit-function-declaration

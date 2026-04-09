@@ -34,7 +34,6 @@ int main(int argc, char **argv)
         if (f == NULL)
             printf("Could not open file %s for writing: %s\n", *out_to_file, strerror(errno));
     }
-    log_msg(TF_BOLD "\ntatr test suite" TF_RESET);
     log_init(.file=f);
 
     suite_init_new();

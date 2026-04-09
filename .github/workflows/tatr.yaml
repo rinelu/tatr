@@ -11,16 +11,33 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build + Install + Test
+      - name: Configure (Release)
         run: |
-          make BUILD=Release WARNINGS=1 -j
-          sudo make install PREFIX=/usr/local
+          cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DTATR_ENABLE_WARNINGS=ON
 
-          make clean
-          make BUILD=Debug ASAN=1 UBSAN=1 -j
+      - name: Build
+        run: cmake --build build -j
 
-          cd tests
-          make
+      - name: Install
+        run: sudo cmake --install build
+
+      - name: Test (Release)
+        run: ./build/tests/run_tests
+
+      - name: Configure (Debug + Sanitizers)
+        run: |
+          cmake -S . -B build-debug \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DTATR_ENABLE_ASAN=ON \
+            -DTATR_ENABLE_UBSAN=ON
+
+      - name: Build (Debug)
+        run: cmake --build build-debug -j
+
+      - name: Test (Debug)
+        run: ./build-debug/tests/run_tests
 
   ubuntu:
     runs-on: ubuntu-latest
@@ -34,20 +51,41 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential clang make
+          sudo apt-get install -y build-essential clang cmake
 
-      - name: Build + Install + Test
+      - name: Configure (Release)
         env:
           CC: ${{ matrix.cc }}
         run: |
-          make BUILD=Release WARNINGS=1 -j
-          sudo make install PREFIX=/usr/local
+          cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=/usr/local \
+            -DTATR_ENABLE_WARNINGS=ON
 
-          make clean
-          make BUILD=Debug ASAN=1 UBSAN=1 -j
+      - name: Build
+        run: cmake --build build -j
 
-          cd tests
-          make
+      - name: Install
+        run: sudo cmake --install build
+
+      - name: Test (Release)
+        run: ./build/tests/run_tests
+
+      - name: Configure (Debug + Sanitizers)
+        env:
+          CC: ${{ matrix.cc }}
+        run: |
+          cmake -S . -B build-debug \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DTATR_ENABLE_ASAN=ON \
+            -DTATR_ENABLE_UBSAN=ON
+
+      - name: Build (Debug)
+        run: cmake --build build-debug -j
+
+      - name: Test (Debug)
+        run: ./build-debug/tests/run_tests
+
 
   windows:
     runs-on: windows-latest
@@ -61,16 +99,40 @@ jobs:
           update: true
           install: >
             mingw-w64-x86_64-gcc
-            make
+            mingw-w64-x86_64-cmake
 
-      - name: Build + Install + Test
+      - name: Configure (Release)
         shell: msys2 {0}
         run: |
-          make BUILD=Release WARNINGS=1 -j
-          make install PREFIX=/mingw64
+          cmake -S . -B build \
+            -G "MinGW Makefiles" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=/mingw64 \
+            -DTATR_ENABLE_WARNINGS=ON
 
-          make clean
-          make BUILD=Debug -j
+      - name: Build
+        shell: msys2 {0}
+        run: cmake --build build -j
 
-          cd tests
-          make
+      - name: Install
+        shell: msys2 {0}
+        run: cmake --install build
+
+      - name: Test (Release)
+        shell: msys2 {0}
+        run: ./build/tests/run_tests.exe
+
+      - name: Configure (Debug)
+        shell: msys2 {0}
+        run: |
+          cmake -S . -B build-debug \
+            -G "MinGW Makefiles" \
+            -DCMAKE_BUILD_TYPE=Debug
+
+      - name: Build (Debug)
+        shell: msys2 {0}
+        run: cmake --build build-debug -j
+
+      - name: Test (Debug)
+        shell: msys2 {0}
+        run: ./build-debug/tests/run_tests.exe

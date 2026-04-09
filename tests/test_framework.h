@@ -292,7 +292,7 @@ static inline void tf__kill_and_reap(pid_t *pids, char **sandbox_paths, int coun
 // Parallel test runner
 // ---------------------------------------------------------------------------
 
-static void tf_run_all_parallel(int max_workers)
+static inline void tf_run_all_parallel(int max_workers)
 {
     // Parallel arrays tracking in-flight children.
     pid_t  *pids           = calloc((size_t)max_workers, sizeof(pid_t));

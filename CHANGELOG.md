@@ -31,6 +31,11 @@ We follow https://semver.org/:
 - Improve `log.h` (thread-safety, colors, file output, API cleanup)
 - Improve status formatting and colors
 - Clean up global help output
+- Rewrite GitHub Actions to use CMake
+- Add cross-platform secure RNG (`arc4random_buf`, `getrandom`, `BCryptGenRandom`)
+- Refactor issue ID generation
+- Improve portability and compiler handling
+- Minor cleanup and fixes
 
 ## 1.2.0 (2026-04-04)
 
