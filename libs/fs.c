@@ -14,7 +14,9 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#define printf(...) {}
+#ifdef FS_SILENT
+#define printf(...) ((void)0)
+#endif
 
 #ifdef _WIN32
 #define FS_SEP "\\"
@@ -130,7 +132,7 @@ bool fs_rename(const char *old_path, const char *new_path)
     return true;
 }
 
-bool fs_mkdir(const char *path)
+bool fs_mkdir_force(const char *path, bool force)
 {
 #ifdef _WIN32
     int result = _mkdir(path);
@@ -138,7 +140,10 @@ bool fs_mkdir(const char *path)
     int result = mkdir(path, 0755);
 #endif
     if (result < 0) {
-        if (errno == EEXIST) return false;
+        if (errno == EEXIST) {
+            if (force) return true;
+            return false;
+        }
         printf("Could not create directory `%s`: %s\n", path, strerror(errno));
         return false;
     }
@@ -346,14 +351,14 @@ bool fs_delete_recursive(const char *path)
             if (!strcmp(dir.name, ".") || !strcmp(dir.name, ".."))
                 continue;
 
-            const char *child = fs_path(path, dir.name);
-
-            if (!fs_delete_recursive(child)) {
-                free((void*)child);
-                goto defer;
-            }
-
-            free((void*)child);
+            size_t child_len = strlen(path) + 1 + strlen(dir.name) + 1;
+            char *child = malloc(child_len);
+            assert(child != NULL && "fs_delete_recursive: out of memory");
+            snprintf(child, child_len, "%s" FS_SEP "%s", path, dir.name);
+ 
+            bool child_ok = fs_delete_recursive(child);
+            free(child);
+            if (!child_ok) goto defer;
         }
 
         if (dir.error) goto defer;

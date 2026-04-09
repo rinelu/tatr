@@ -1,5 +1,12 @@
+#define FS_SILENT
+
+#define LOG_GLOBAL
+#define LOG_IMPLEMENTATION
+#include "log.h"
+
 #include <stdbool.h>
 #include "cmd/cmd.h"
+
 #include "ui.h"
 
 #define CLAG_IMPLEMENTATION
@@ -21,8 +28,8 @@ int main(int argc, char **argv)
 
     const Command *cmd = find_command(cmd_name);
     if (!cmd) {
-        ui_error("tatr: unknown command '%s'", cmd_name);
-        ui_info("Run `tatr help` for a list of commands.");
+        log_error("tatr: unknown command '%s'", cmd_name);
+        log_info("Run `tatr help` for a list of commands.");
         return 1;
     }
 

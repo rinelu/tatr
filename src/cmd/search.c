@@ -32,7 +32,7 @@ int cmd_search(int argc, char **argv)
     }
 
     if (clag_rest_argc() < 1) {
-        ui_error("Missing search query");
+        log_error("Missing search query");
         return 1;
     }
     if (!require_repo()) return 1;
@@ -45,7 +45,7 @@ int cmd_search(int argc, char **argv)
 
     File_Paths issues = {0};
     if (!fs_read_dir(".tatr/issues", &issues)) {
-        ui_error("Cannot read issues directory");
+        log_error("Cannot read issues directory");
         goto defer;
     }
 
@@ -111,12 +111,12 @@ false_match:
     }
 
     if (found == 0) {
-        ui_msg("(no results for '%s')", clag_rest_argv()[0]);
+        log_msg("(no results for '%s')", clag_rest_argv()[0]);
         goto defer;
     }
-    ui_msg("(%zu result%s for '%s')", found, found == 1 ? "" : "s", clag_rest_argv()[0]);
+    log_msg("(%zu result%s for '%s')", found, found == 1 ? "" : "s", clag_rest_argv()[0]);
 
-    result = 1;
+    result = 0;
 defer:
     da_free(issues);
     da_free(tokens);

@@ -20,7 +20,7 @@ int cmd_tag(int argc, char **argv)
     }
 
     if (clag_rest_argc() < 1) {
-        ui_error("Missing issue ID");
+        log_error("Missing issue ID");
         return 1;
     }
 
@@ -30,7 +30,7 @@ int cmd_tag(int argc, char **argv)
     size_t tmark = temp_save();
     Issue iss;
     if (!issue_load(id, &iss)) {
-        ui_error("Issue '%s' not found", id);
+        log_error("Issue '%s' not found", id);
         return 1;
     }
 
@@ -50,7 +50,7 @@ int cmd_tag(int argc, char **argv)
 
         if (*remove) {
             if (found < 0) {
-                ui_warn("Tag '%s' not present on issue %s", t, id);
+                log_warn("Tag '%s' not present on issue %s", t, id);
                 goto defer;
             }
             da_remove_unordered(&owned, (size_t)found);
@@ -58,7 +58,7 @@ int cmd_tag(int argc, char **argv)
         }
 
         if (found >= 0) {
-            ui_warn("Tag '%s' already present on issue %s", t, id);
+            log_warn("Tag '%s' already present on issue %s", t, id);
             goto defer;
         }
 
@@ -73,11 +73,11 @@ int cmd_tag(int argc, char **argv)
 
     issue_replace_field(&iss, "tags", sb.items);
     if (!issue_save(&iss)) {
-        ui_error("Failed to save issue %s", id);
+        log_error("Failed to save issue %s", id);
         goto defer;
     }
 
-    ui_info("Updated tags for issue %s", id);
+    log_info("Updated tags for issue %s", id);
     result = 0;
 
 defer:

@@ -6,6 +6,8 @@ project(tatr
     LANGUAGES C
 )
 
+# ---- Global settings ----
+
 set(CMAKE_C_EXTENSIONS OFF)
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -14,29 +16,13 @@ endif()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# ---- Options ----
+
 option(TATR_ENABLE_WARNINGS "Enable strict warnings" ON)
 option(TATR_ENABLE_ASAN     "Enable AddressSanitizer" OFF)
 option(TATR_ENABLE_UBSAN    "Enable UBSan" OFF)
 
-set(TATR_WARNINGS
-    -Wall
-    -Wextra
-    -Wpedantic
-    -Wshadow
-    -Wconversion
-    -Wstrict-prototypes
-    -Werror=implicit-function-declaration
-)
-
-set(TATR_SANITIZERS "")
-
-if(TATR_ENABLE_ASAN)
-    list(APPEND TATR_SANITIZERS -fsanitize=address)
-endif()
-
-if(TATR_ENABLE_UBSAN)
-    list(APPEND TATR_SANITIZERS -fsanitize=undefined)
-endif()
+# ---- Sources ----
 
 set(TATR_SRC
     src/main.c
@@ -68,21 +54,16 @@ set(TATR_LIB_SRC
     libs/temp.c
 )
 
-add_library(tatrlib
-    ${TATR_LIB_SRC}
-)
+# ---- Library ----
+
+add_library(tatrlib ${TATR_LIB_SRC})
 
 target_include_directories(tatrlib
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/libs
 )
 
-if(TATR_ENABLE_WARNINGS)
-    target_compile_options(tatrlib PRIVATE ${TATR_WARNINGS})
-endif()
-
-target_compile_options(tatrlib PRIVATE ${TATR_SANITIZERS})
-target_link_options(tatrlib PRIVATE ${TATR_SANITIZERS})
+# ---- Executable ----
 
 add_executable(tatr
     ${TATR_SRC}
@@ -95,27 +76,69 @@ target_include_directories(tatr
         ${CMAKE_CURRENT_SOURCE_DIR}/src/cmd
 )
 
-target_link_libraries(tatr
-    PRIVATE
-        tatrlib
-)
+target_link_libraries(tatr PRIVATE tatrlib)
+
+# ---- Compiler warnings ----
 
 if(TATR_ENABLE_WARNINGS)
-    target_compile_options(tatr PRIVATE ${TATR_WARNINGS})
+    if(MSVC)
+        target_compile_options(tatrlib PRIVATE /W4)
+        target_compile_options(tatr    PRIVATE /W4)
+    else()
+        set(TATR_WARNINGS
+            -Wall
+            -Wextra
+            -Wshadow
+            -Wconversion
+            -Wstrict-prototypes
+            -Werror=implicit-function-declaration
+        )
+
+        target_compile_options(tatrlib PRIVATE ${TATR_WARNINGS})
+        target_compile_options(tatr    PRIVATE ${TATR_WARNINGS})
+    endif()
 endif()
 
-target_compile_options(tatr PRIVATE ${TATR_SANITIZERS})
-target_link_options(tatr PRIVATE ${TATR_SANITIZERS})
+# ---- Sanitizers (GCC/Clang only) ----
 
-# Debug
+set(TATR_SANITIZERS "")
+
+if(TATR_ENABLE_ASAN)
+    list(APPEND TATR_SANITIZERS -fsanitize=address)
+endif()
+
+if(TATR_ENABLE_UBSAN)
+    list(APPEND TATR_SANITIZERS -fsanitize=undefined)
+endif()
+
+if(TATR_SANITIZERS AND NOT MSVC)
+    target_compile_options(tatrlib PRIVATE ${TATR_SANITIZERS})
+    target_link_options(tatrlib PRIVATE ${TATR_SANITIZERS})
+
+    target_compile_options(tatr PRIVATE ${TATR_SANITIZERS})
+    target_link_options(tatr PRIVATE ${TATR_SANITIZERS})
+endif()
+
+# ---- Build type flags ----
+
 target_compile_options(tatr PRIVATE
-    $<$<CONFIG:Debug>:-O0 -ggdb>
+    $<$<CONFIG:Debug>:-O0 -g>
+    $<$<CONFIG:Release>:-O3 -DNDEBUG>
 )
 
-# Release
-target_compile_options(tatr PRIVATE
-    $<$<CONFIG:Release>:-O2 -DNDEBUG>
-)
+# ---- Platform-specific config ----
+
+# Windows: link bcrypt for BCryptGenRandom
+if(WIN32)
+    target_link_libraries(tatrlib PUBLIC bcrypt)
+endif()
+
+# Linux: enable getrandom()
+if(UNIX AND NOT APPLE)
+    target_compile_definitions(tatrlib PRIVATE _GNU_SOURCE)
+endif()
+
+# ---- Installation ----
 
 include(GNUInstallDirs)
 
@@ -123,7 +146,14 @@ install(TARGETS tatr
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
+# ---- Status output ----
+
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 message(STATUS "Warnings:   ${TATR_ENABLE_WARNINGS}")
 message(STATUS "ASAN:       ${TATR_ENABLE_ASAN}")
 message(STATUS "UBSAN:      ${TATR_ENABLE_UBSAN}")
+message(STATUS "System:     ${CMAKE_SYSTEM_NAME}")
+message(STATUS "Compiler:   ${CMAKE_C_COMPILER_ID}")
+
+enable_testing()
+add_subdirectory(tests)

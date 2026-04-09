@@ -1,5 +1,43 @@
 #include "cmd.h"
 
+static void fill_random(unsigned char *buf, size_t len)
+{
+#if defined(__APPLE__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__)
+    arc4random_buf(buf, len);
+
+#elif defined(_WIN32)
+#pragma comment(lib, "bcrypt.lib")
+    BCryptGenRandom(NULL, buf, (ULONG)len, BCRYPT_USE_SYSTEM_PREFERRED_RNG);
+
+#else
+#include <sys/random.h>
+#if defined(__linux__) && defined(__GLIBC__) && (__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 25))
+    getrandom(buf, len, 0);
+#else
+    FILE *f = fopen("/dev/urandom", "rb");
+    if (f) {
+        fread(buf, 1, len, f);
+        fclose(f);
+        return;
+    }
+    for (size_t i = 0; i < len; i++)
+        buf[i] = (unsigned char)(rand() ^ (int)(uintptr_t)(buf + i));
+#endif
+#endif
+}
+
+static void generate_issue_id(String_Builder *out)
+{
+    char time[32];
+    timestamp_id(time, sizeof(time));
+
+    unsigned char rnd[3];
+    fill_random(rnd, sizeof(rnd));
+
+    sb_appendf(out, "%s-%02x%02x%02x", time, rnd[0], rnd[1], rnd[2]);
+    sb_append_null(out);
+}
+
 int cmd_new(int argc, char **argv)
 {
     char    **title    = clag_str ("title",    't', NULL,     "Issue title");
@@ -20,13 +58,13 @@ int cmd_new(int argc, char **argv)
 
     const char *valid_priorities[] = { "low", "normal", "high", "critical", NULL };
     if (!str_in(*priority, valid_priorities)) {
-        ui_error("Invalid priority '%s'. Use: low | normal | high | critical", *priority);
+        log_error("Invalid priority '%s'. Use: low | normal | high | critical", *priority);
         return 1;
     }
 
     const char *valid_statuses[] = { "open", "closed", "in-progress", "wontfix", NULL };
     if (!str_in(*status, valid_statuses)) {
-        ui_error("Invalid status '%s'. Use: open | closed | in-progress | wontfix", *status);
+        log_error("Invalid status '%s'. Use: open | closed | in-progress | wontfix", *status);
         return 1;
     }
 
@@ -34,26 +72,25 @@ int cmd_new(int argc, char **argv)
 
     size_t tmark = temp_save();
     int result = 1;
-    char id[32];
-    timestamp_id(id, sizeof(id));
+    String_Builder id = {0};
+    generate_issue_id(&id);
 
-    const char *path = fs_path(".tatr/issues", id);
-
+    const char *path = fs_path(".tatr/issues", id.items);
     if (!fs_mkdir(path)) {
-        ui_error("Cannot create issue directory for '%s'", id);
+        log_error("Failed to create issue directory '%s'", id.items);
         goto defer;
     }
 
-    path = fs_path(".tatr/issues", id, "attachments");
+    path = fs_path(".tatr/issues", id.items, "attachments");
     if (!fs_mkdir(path)) {
-        ui_error("Cannot create attachments directory for '%s'", id);
+        log_error("Cannot create attachments directory for '%s'", id.items);
         goto defer;
     }
 
     String_Builder body_text = {0};
     if (*file) {
         if (!fs_read_file(*file, &body_text)) {
-            ui_error("Cannot read body from '%s'", *file);
+            log_error("Cannot read body from '%s'", *file);
             goto defer;
         }
     } else if (*body) {
@@ -85,16 +122,17 @@ int cmd_new(int argc, char **argv)
 
     sb_append_null(&content);
 
-    path = fs_path(".tatr/issues", id, "issue.tatr");
+    path = fs_path(".tatr/issues", id.items, "issue.tatr");
     bool ok = fs_write_file(path, content.items, content.count - 1);
     if (!ok) {
-        ui_error("Cannot write issue file for '%s'", id);
+        log_error("Cannot write issue file for '%s'", id.items);
         goto defer;
     }
 
-    ui_info("Created issue %s", id);
+    log_info("Created issue %s", id.items);
     result = 0;
 defer:
+    sb_free(id);
     sb_free(content);
     sb_free(tags_sb);
     sb_free(body_text);

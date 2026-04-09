@@ -10,7 +10,7 @@ int cmd_reopen(int argc, char **argv)
     }
 
     if (clag_rest_argc() < 1) {
-        ui_error("tatr reopen: missing issue ID");
+        log_error("tatr reopen: missing issue ID");
         return 1;
     }
 
@@ -20,16 +20,16 @@ int cmd_reopen(int argc, char **argv)
 
     Issue iss;
     if (!issue_load(id, &iss)) {
-        ui_error("issue '%s' not found", id);
+        log_error("issue '%s' not found", id);
         goto defer;
     }
 
     if (!issue_replace_field(&iss, "status", "open")) {
-        ui_error("tatr: failed to reopen issue");
+        log_error("tatr: failed to reopen issue");
         goto defer;
     }
 
-    ui_info("Reopened issue %s", id);
+    log_info("Reopened issue %s", id);
     result = 0;
     issue_save(&iss);
 

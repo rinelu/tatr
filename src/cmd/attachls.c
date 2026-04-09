@@ -10,7 +10,7 @@ int cmd_attachls(int argc, char **argv)
     }
 
     if (clag_rest_argc() < 1) {
-        ui_error("tatr attachls: missing issue ID");
+        log_error("tatr attachls: missing issue ID");
         return 1;
     }
 
@@ -21,25 +21,24 @@ int cmd_attachls(int argc, char **argv)
     File_Paths files = {0};
 
     if (!issue_load(id, &iss)) {
-        ui_error("tatr: issue '%s' not found", id);
+        log_error("tatr: issue '%s' not found", id);
         goto defer;
     }
 
     if (!fs_read_dir(iss.attach_path, &files)) {
-        ui_error("tatr: cannot list attachments");
+        log_error("tatr: cannot list attachments");
         goto defer;
     }
-
-    if (files.count == 0) {
-        ui_msg("(no attachments)");
-        goto defer;
-    }
-
-    ui_msg("Attachments of issue '"SV_Fmt"'", SV_Arg(iss.id));
-    for (size_t i = 0; i < files.count; i++)
-        ui_msg("  - %s", files.items[i]);
 
     result = 0;
+    if (files.count == 0) {
+        log_msg("(no attachments)");
+        goto defer;
+    }
+
+    log_msg("Attachments of issue '"SV_Fmt"'", SV_Arg(iss.id));
+    for (size_t i = 0; i < files.count; i++)
+        log_msg("  - %s", files.items[i]);
 
 defer:
     issue_free(&iss);

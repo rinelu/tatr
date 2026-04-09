@@ -29,7 +29,8 @@ const char *fs_path_name(const char *path);
 bool fs_file_exists(const char *file_path);
 bool fs_unique_path(const char *dir, const char *filename, String_Builder *out);
 bool fs_rename(const char *old_path, const char *new_path);
-bool fs_mkdir(const char *path);
+bool fs_mkdir_force(const char *path, bool force);
+#define fs_mkdir(path) fs_mkdir_force(path, false)
 bool fs_copy_file(const char *src_path, const char *dst_path);
 bool fs_read_dir(const char *parent, File_Paths *children);
 bool fs_read_file(const char *path, String_Builder *sb);

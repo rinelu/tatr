@@ -74,6 +74,7 @@
 #include <string.h>
 #include <errno.h>
 #include <float.h>
+#include <stdarg.h>
 
 #ifndef CLAG_CAP
 #define CLAG_CAP 256
@@ -163,6 +164,8 @@ const char *clag_name(void *val);
 // True if the named flag was explicitly supplied.
 bool clag_is_set(const char *name);
 
+// Ture if the named flag was seen.
+
 #endif // CLAG_H_
 
 #ifdef CLAG_IMPLEMENTATION
@@ -230,6 +233,7 @@ typedef struct {
     const char    *depr_msg;
 
     bool           is_set;
+    bool           seen;
 } Clag;
 
 typedef struct {
@@ -722,7 +726,7 @@ bool clag_parse(int argc, char **argv)
             break;
         }
 
-        // not a flag → positional (BUT keep parsing later flags)
+        // not a flag -> positional (BUT keep parsing later flags)
         if (arg[0] != '-' || arg[1] == '\0') {
             g_clag.rest_argv[g_clag.rest_argc++] = arg;
             continue;
@@ -747,6 +751,7 @@ bool clag_parse(int argc, char **argv)
 
             if (name_len == 1 && sf0) {
                 // Case 1: single short char
+                sf0->seen = true;
                 if (sf0->type == CLAG_TYPE_BOOL) {
                     if (!clag__apply(sf0, "true")) return false;
                 } else {
@@ -764,6 +769,7 @@ bool clag_parse(int argc, char **argv)
                 // Case 2: -oFILE - only if the full token is NOT a long flag name.
                 // E.g. "-out" with short 'o' and long flag "out": prefer long.
                 if (!clag__find_long(name_start)) {
+                    sf0->seen = true;
                     if (!clag__apply(sf0, name_start + 1)) return false;
                     continue;
                 }
@@ -779,6 +785,7 @@ bool clag_parse(int argc, char **argv)
                 if (all_bool) {
                     for (size_t k = 0; k < name_len; k++) {
                         Clag *bf = clag__find_short(name_start[k]);
+                        bf->seen = true;
                         if (!clag__apply(bf, "true")) return false;
                     }
                     continue;
@@ -811,6 +818,7 @@ bool clag_parse(int argc, char **argv)
             g_clag.error_flag_name = name_start;
             return false;
         }
+        f->seen = true;
 
         const char *inline_val = eq ? eq + 1 : NULL;
         if (f->type == CLAG_TYPE_BOOL && !inline_val) {
@@ -865,6 +873,12 @@ bool clag_is_set(const char *name)
 {
     Clag *f = clag__find_long(name);
     return f && f->is_set;
+}
+
+bool clag_was_seen(const char *name)
+{
+    Clag *f = clag__find_long(name);
+    return f && f->seen;
 }
 
 // -----------

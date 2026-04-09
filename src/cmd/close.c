@@ -19,7 +19,7 @@ int cmd_close(int argc, char **argv)
     }
 
     if (clag_rest_argc() < 1) {
-        ui_error("tatr close: missing issue ID");
+        log_error("tatr close: missing issue ID");
         return 1;
     }
 
@@ -35,11 +35,13 @@ int cmd_close(int argc, char **argv)
     const char *new_status = reason_to_status(*reason);
 
     bool ok = issue_replace_field(&iss, "status", new_status);
-    if (ok) ui_info("Closed issue %s  (status: %s)", id, new_status);
-    else    ui_error("tatr: failed to close issue %s", id);
-
+    if (!ok) {
+        log_error("tatr: failed to close issue %s", id);
+        goto defer;
+    }
+    log_info("Closed issue %s  (status: %s)", id, new_status);
     issue_save(&iss);
-    result = ok;
+    result = 0;
 defer:
     issue_free(&iss);
     temp_rewind(tmark);

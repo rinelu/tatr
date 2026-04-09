@@ -12,7 +12,7 @@ int cmd_delete(int argc, char **argv)
     }
 
     if (clag_rest_argc() < 1) {
-        ui_error("missing issue ID");
+        log_error("missing issue ID");
         return 1;
     }
 
@@ -22,22 +22,22 @@ int cmd_delete(int argc, char **argv)
     int result = 1;
     Issue iss;
     if (!issue_load(id, &iss)) {
-        ui_error("issue '%s' not found", id);
+        log_error("issue '%s' not found", id);
         goto defer;
     }
 
-    if (!*yes && !ui_confirm("Delete issue %s ("SV_Fmt")?", id, SV_Arg(iss.title))) {
-        ui_msg("Aborted.");
+    if (!*yes && !log_confirm("Delete issue %s ("SV_Fmt")?", id, SV_Arg(iss.title))) {
+        log_msg("Aborted.");
         result = 0;
         goto defer;
     }
 
     if (!fs_delete_recursive(iss.dpath)) {
-        ui_error("failed to delete issue '%s'", id);
+        log_error("failed to delete issue '%s'", id);
         goto defer;
     }
 
-    ui_info("Deleted issue %s", id);
+    log_info("Deleted issue %s", id);
     result = 0;
 defer:
     issue_free(&iss);
