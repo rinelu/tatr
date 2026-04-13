@@ -8,8 +8,8 @@ typedef struct {
 
 int cmd_tag(int argc, char **argv)
 {
-    bool     *remove = clag_bool("remove", 'r', false, "Remove the tag instead of adding");
-    ClagList *tags   = clag_list("tag",    't', ',',   "Tag(s) to add or remove");
+    bool      *remove = clag_bool("remove", 'r', false, "Remove the tag instead of adding");
+    Clag_List *tags   = clag_list("tag",    't', ',',   "Tag(s) to add or remove");
     clag_usage("<id> [--tag <tag>,...] [--remove]");
     clag_required("tag");
 

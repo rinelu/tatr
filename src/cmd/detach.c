@@ -16,6 +16,8 @@ int cmd_detach(int argc, char **argv)
         return 1;
     }
 
+    if (!require_repo()) return 1;
+
     size_t tmark = temp_save();
     int result = 1;
 

@@ -6,13 +6,6 @@ typedef struct {
     size_t capacity;
 } Tokens;
 
-static int cmp_paths(const void *a, const void *b)
-{
-    const char *pa = *(const char *const *)a;
-    const char *pb = *(const char *const *)b;
-    return strcmp(pa, pb);
-}
-
 static bool match_token(String_View haystack, String_View token, bool case_flag)
 {
     return case_flag ? sv_contains(haystack, token) : sv_icontains(haystack, token);
@@ -69,7 +62,7 @@ int cmd_search(int argc, char **argv)
                 String_View value = rest;
 
                 if (sv_eq_cstr(key, "tag") || sv_eq_cstr(key, "tags")) {
-                    if (!sv_has(iss.tags, value.data, ","))
+                    if (!sv_has(iss.tags, value.data, ','))
                         goto false_match;
                 } else if (sv_eq_cstr(key, "status")) {
                     if (!match_token(iss.status, value, *case_flag))
@@ -111,7 +104,7 @@ false_match:
     }
 
     if (found == 0) {
-        log_msg("(no results for '%s')", clag_rest_argv()[0]);
+        log_msg("(no results)");
         goto defer;
     }
     log_msg("(%zu result%s for '%s')", found, found == 1 ? "" : "s", clag_rest_argv()[0]);

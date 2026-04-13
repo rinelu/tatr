@@ -13,6 +13,47 @@ We follow https://semver.org/:
 - Changes to issue file format are considered **MAJOR**
 - Command behavior should remain backward-compatible within MINOR
 
+## 1.3.1 (2026-04-13)
+
+- Add `clag_reset()` call before command execution to avoid state leakage between commands
+- Add cross-platform `chdir` wrapper (`tf__chdir`)
+- Add new `export` command (Markdown/JSON support)
+- Add require_repo() guard to all repository-dependent commands
+- Add sequential test runner fallback on Windows (no fork support)
+- Add sorting for attachment listing (`attachls`) output
+- Add Win32 sandbox creation (`tf__mkdtemp`) and path handling
+- Add Windows support for test framework and helpers
+- Clean up test helper formatting and argument alignment
+- Ensure temporary file cleanup after successful save
+
+- Fix `issue_save()` to safely write via temp file and avoid data loss on failure
+- Fix `sv_has` API to use `char` delimiter instead of `const char *`
+- Fix missing `da_free` call on failure in `status` command
+- Fix path sanitization to handle Windows separators (`\`)
+- Fix potential deadlocks in Windows pipe reading (overlapped I/O)
+- Fix potential memory issue by ensuring null-terminated temp paths
+
+- Implement cross-platform process execution (`tatr`) with Windows pipe handling
+- Improve child process management and cleanup logic
+- Improve error handling and cleanup paths in multiple commands
+- Improve pipe draining logic for both POSIX and Windows implementations
+- Improve sandbox lifecycle handling across platforms
+- Improve search message when no results are found
+- Improve signal handling portability (`signal` vs `sigaction`)
+
+- Minor consistency and readability improvements
+- Minor consistency and readability improvements across test utilities
+- Move `cmp_paths` helper to shared `util.h`
+
+- Refactor command table and helper visibility using `NEED_CMD_HELPER`
+- Refactor parallel runner internals (naming, cleanup, robustness)
+- Refactor test runner to use shared `tf__run_one` logic
+
+- Remove duplicate `cmp_paths` implementations across commands
+- Remove duplicate includes and clean up headers
+- Replace direct POSIX includes with platform-specific conditionals
+- Update all call sites to match new `sv_has` signature
+
 ## 1.3.0 (2026-04-07)
 
 - Rewrite GitHub Actions to use CMake

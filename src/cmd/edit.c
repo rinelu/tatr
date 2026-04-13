@@ -33,6 +33,8 @@ int cmd_edit(int argc, char **argv)
         return 1;
     }
 
+    if (!require_repo()) return 1;
+
     const char *id = clag_rest_argv()[0];
     if (!str_in(*field, EDITABLE_FIELDS)) {
         log_error("unknown field '%s' (use: title | status | priority | tags)", *field);

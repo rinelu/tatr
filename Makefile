@@ -20,6 +20,7 @@ SRC := \
 	$(SRC_DIR)/ui.c
 
 CMD_SRC := \
+	$(CMD_DIR)/basic.c \
 	$(CMD_DIR)/init.c \
 	$(CMD_DIR)/new.c \
 	$(CMD_DIR)/list.c \
@@ -34,6 +35,7 @@ CMD_SRC := \
 	$(CMD_DIR)/attachls.c \
 	$(CMD_DIR)/detach.c \
 	$(CMD_DIR)/tag.c \
+	$(CMD_DIR)/export.c \
 	$(CMD_DIR)/status.c
 
 LIB_SRC := \

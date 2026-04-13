@@ -1,4 +1,5 @@
 #include "issue.h"
+#include "astring.h"
 #include "fs.h"
 #include "temp.h"
 
@@ -133,13 +134,16 @@ bool issue_save(Issue *iss)
     issue__update(iss);
     String_Builder tmp_path = {0};
     sb_appendf(&tmp_path, "%s.tmp", iss->path);
+    sb_append_null(&tmp_path);
 
-    fs_write_file(tmp_path.items, iss->raw.data, iss->raw.count);
+    if (!fs_write_file(tmp_path.items, iss->raw.data, iss->raw.count))
+        goto defer;
 
-    if (!fs_delete_file(iss->path) || !fs_rename(tmp_path.items, iss->path))
+    if (!fs_rename(tmp_path.items, iss->path))
         goto defer;
 
     result = true;
+    fs_delete_file(tmp_path.items);
 defer:
     sb_free(tmp_path);
     return result;
@@ -153,5 +157,5 @@ bool issue_is_closed(const Issue *iss)
 
 bool issue_has_tag(const Issue *iss, const char *tag)
 {
-    return sv_has(iss->tags, tag, ",");
+    return sv_has(iss->tags, tag, ',');
 }

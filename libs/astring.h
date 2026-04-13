@@ -54,7 +54,7 @@ String_View sv_trim_left(String_View sv);
 String_View sv_trim_right(String_View sv);
 bool sv_eq(String_View a, String_View b);
 bool sv_eq_cstr(String_View a, const char* b);
-bool sv_has(String_View sv, const char *key, const char *delim);
+bool sv_has(String_View sv, const char *key, char delim);
 bool sv_contains(String_View haystack, String_View needle);
 bool sv_icontains(String_View haystack, String_View needle);
 bool sv_ends_with_cstr(String_View sv, const char *cstr);

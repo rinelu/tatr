@@ -13,6 +13,7 @@ int cmd_attach(int argc, char **argv)
         log_error("Usage: tatr attach <id> <file> [<file> ...]");
         return 1;
     }
+    if (!require_repo()) return 1;
 
     const char *id = clag_rest_argv()[0];
 
@@ -21,7 +22,7 @@ int cmd_attach(int argc, char **argv)
     Issue iss;
     if (!issue_load(id, &iss)) {
         log_error("issue '%s' not found", id);
-        return 1;
+        goto defer;
     }
 
     if (!fs_mkdir(iss.attach_path) && !fs_file_exists(iss.attach_path)) {

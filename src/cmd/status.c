@@ -122,6 +122,7 @@ int cmd_status(int argc, char **argv)
     File_Paths ids = {0};
     if (!fs_read_dir(".tatr/issues", &ids)) {
         log_error("cannot read issues directory");
+        da_free(ids);
         return 1;
     }
 
