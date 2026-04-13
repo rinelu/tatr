@@ -145,12 +145,12 @@ bool sv_eq_cstr(String_View a, const char* b)
     return sv_eq(a, sv_from_cstr(b));
 }
 
-bool sv_has(String_View sv, const char *key, const char *delim)
+bool sv_has(String_View sv, const char *key, char delim)
 {
     String_View cursor = sv;
 
     while (cursor.count > 0) {
-        String_View part = sv_trim(sv_slice_by_delim(&cursor, *delim));
+        String_View part = sv_trim(sv_slice_by_delim(&cursor, delim));
         if (sv_eq(part, sv_from_cstr(key))) return true;
     }
 

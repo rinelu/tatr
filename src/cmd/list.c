@@ -1,12 +1,5 @@
 #include "cmd.h"
 
-static int cmp_paths(const void *a, const void *b)
-{
-    const char *pa = *(const char *const *)a;
-    const char *pb = *(const char *const *)b;
-    return strcmp(pa, pb);
-}
-
 typedef struct {
     const char *status;
     const char *priority;

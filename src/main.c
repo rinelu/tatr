@@ -5,12 +5,12 @@
 #include "log.h"
 
 #include <stdbool.h>
+
+#define CLAG_IMPLEMENTATION
+#define NEED_CMD_HELPER
 #include "cmd/cmd.h"
 
 #include "ui.h"
-
-#define CLAG_IMPLEMENTATION
-#include "clag.h"
 
 int main(int argc, char **argv)
 {
@@ -33,6 +33,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
+    clag_reset();
     int result = cmd->fn(sub_argc, sub_argv);
     // int result = cmd->fn(sub_argc, sub_argv) ? 1 : 0;
     return result;

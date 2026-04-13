@@ -40,12 +40,12 @@ static void generate_issue_id(String_Builder *out)
 
 int cmd_new(int argc, char **argv)
 {
-    char    **title    = clag_str ("title",    't', NULL,     "Issue title");
-    char    **priority = clag_str ("priority", 'p', "normal", "Priority: low | normal | high | critical");
-    char    **status   = clag_str ("status",   's', "open",   "Initial status");
-    ClagList *tags     = clag_list("tag",      'T', ',',      "Comma-separated tags or repeat -T");
-    char    **body     = clag_str ("body",     'b', NULL,     "Issue body text (optional, inline)");
-    char    **file     = clag_str ("file",     'F', NULL,     "Read body from file ('-' for stdin)");
+    char     **title    = clag_str ("title",    't', NULL,     "Issue title");
+    char     **priority = clag_str ("priority", 'p', "normal", "Priority: low | normal | high | critical");
+    char     **status   = clag_str ("status",   's', "open",   "Initial status");
+    Clag_List *tags     = clag_list("tag",      'T', ',',      "Comma-separated tags or repeat -T");
+    char     **body     = clag_str ("body",     'b', NULL,     "Issue body text (optional, inline)");
+    char     **file     = clag_str ("file",     'F', NULL,     "Read body from file ('-' for stdin)");
 
     clag_required("title");
     clag_usage("[options]  (creates a new issue)");

@@ -31,6 +31,7 @@ set(TATR_SRC
 )
 
 set(TATR_CMD_SRC
+    src/cmd/basic.c
     src/cmd/init.c
     src/cmd/new.c
     src/cmd/list.c
@@ -46,6 +47,7 @@ set(TATR_CMD_SRC
     src/cmd/detach.c
     src/cmd/tag.c
     src/cmd/status.c
+    src/cmd/export.c
 )
 
 set(TATR_LIB_SRC
@@ -112,9 +114,6 @@ if(TATR_ENABLE_UBSAN)
 endif()
 
 if(TATR_SANITIZERS AND NOT MSVC)
-    target_compile_options(tatrlib PRIVATE ${TATR_SANITIZERS})
-    target_link_options(tatrlib PRIVATE ${TATR_SANITIZERS})
-
     target_compile_options(tatr PRIVATE ${TATR_SANITIZERS})
     target_link_options(tatr PRIVATE ${TATR_SANITIZERS})
 endif()

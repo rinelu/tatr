@@ -14,6 +14,8 @@ int cmd_attachls(int argc, char **argv)
         return 1;
     }
 
+    if (!require_repo()) return 1;
+
     size_t tmark = temp_save();
     int result = 1;
     const char *id = clag_rest_argv()[0];
@@ -30,6 +32,8 @@ int cmd_attachls(int argc, char **argv)
         goto defer;
     }
 
+    da_sort(&files, cmp_paths);
+    
     result = 0;
     if (files.count == 0) {
         log_msg("(no attachments)");

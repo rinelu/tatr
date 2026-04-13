@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#include <string.h>
 
 #include "fs.h"
 #include "global.h"
@@ -23,8 +22,8 @@ inline static bool require_repo(void)
     return true;
 }
 
-static int cmd_version(int argc, char **argv);
-static int cmd_help   (int argc, char **argv);
+int cmd_version(int argc, char **argv);
+int cmd_help   (int argc, char **argv);
 int cmd_init   (int argc, char **argv);
 int cmd_new    (int argc, char **argv);
 int cmd_list   (int argc, char **argv);
@@ -38,8 +37,9 @@ int cmd_delete (int argc, char **argv);
 int cmd_reopen (int argc, char **argv);
 int cmd_attach (int argc, char **argv);
 int cmd_attachls(int argc, char **argv);
-int cmd_detach (int argc, char **argv);
-int cmd_status (int argc, char **argv);
+int cmd_detach  (int argc, char **argv);
+int cmd_status  (int argc, char **argv);
+int cmd_export  (int argc, char **argv);
 
 typedef int (*CmdFn)(int argc, char **argv);
 
@@ -64,6 +64,7 @@ static const Command commands[] = {
     { "delete",   "Permanently delete an issue and its attachments",        cmd_delete   },
     { "close",    "Mark an issue as closed",                                cmd_close    },
     { "reopen",   "Reopen a closed issue",                                  cmd_reopen   },
+    { "export",   "Export an issue to Markdown or JSON",                    cmd_export   },
 
     { "Organization", NULL, NULL },
     { "search",   "Full-text search across all issue files",                cmd_search   },
@@ -78,17 +79,10 @@ static const Command commands[] = {
 
 static const int COMMANDS_COUNT = (int)(sizeof(commands) / sizeof(*commands));
 
-static const Command *find_command(const char *name)
-{
-    for (int i = 0; i < COMMANDS_COUNT; i++)
-        if (strcmp(commands[i].name, name) == 0 && commands[i].summary != NULL)
-            return &commands[i];
-    return NULL;
-}
-
+#ifdef NEED_CMD_HELPER
 static void print_global_help(void)
 {
-    log_msg("\ntatr %s - tiny issue tracker\n", TATR_VERSION);
+    log_msg("\ntatr %s - tiny issue(s) tracker\n", TATR_VERSION);
     log_msg("Usage: tatr <command> [options]\n");
     log_msg("Commands:");
     for (int i = 0; i < COMMANDS_COUNT; i++) {
@@ -101,27 +95,13 @@ static void print_global_help(void)
     log_msg("\nRun `tatr help <command>` for per-command help.\n");
 }
 
-static int cmd_version(int argc, char **argv)
+static const Command *find_command(const char *name)
 {
-    (void)argc; (void)argv;
-    log_info("tatr %s", TATR_VERSION);
-    return 0;
+    for (int i = 0; i < COMMANDS_COUNT; i++)
+        if (strcmp(commands[i].name, name) == 0 && commands[i].summary != NULL)
+            return &commands[i];
+    return NULL;
 }
-
-static int cmd_help(int argc, char **argv)
-{
-    if (argc <= 1) {
-        print_global_help();
-        return 0;
-    }
-
-    const Command *c = find_command(argv[1]);
-    if (!c) {
-        log_error("tatr: unknown command '%s'", argv[1]);
-        return 1;
-    }
-    char *help_argv[] = { (char *)c->name, "--help", NULL };
-    return c->fn(2, help_argv);
-}
+#endif // NEED_CMD_HELPER
 
 #endif // CMD_H_

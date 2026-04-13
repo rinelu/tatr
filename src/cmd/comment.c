@@ -19,6 +19,8 @@ int cmd_comment(int argc, char **argv)
         return 1;
     }
 
+    if (!require_repo()) return 1;
+
     const char *id = clag_rest_argv()[0];
     Issue iss;
     if (!issue_load(id, &iss)) {

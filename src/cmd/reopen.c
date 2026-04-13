@@ -14,6 +14,8 @@ int cmd_reopen(int argc, char **argv)
         return 1;
     }
 
+    if (!require_repo()) return 1;
+
     const char *id = clag_rest_argv()[0];
     int result = 1;
     size_t tmark = temp_save();

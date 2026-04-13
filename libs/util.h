@@ -45,4 +45,12 @@ inline static bool str_in(const char *s, const char *const *list)
     return false;
 }
 
+inline static int cmp_paths(const void *a, const void *b)
+{
+    const char *pa = *(const char *const *)a;
+    const char *pb = *(const char *const *)b;
+    return strcmp(pa, pb);
+}
+
+
 #endif // LIB_UTIL_H_

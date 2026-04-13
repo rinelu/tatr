@@ -9,15 +9,8 @@ set(TEST_SOURCES
     test_status_meta.c
 )
 
-set(LIB_SOURCES
-    ${CMAKE_SOURCE_DIR}/libs/astring.c
-    ${CMAKE_SOURCE_DIR}/libs/fs.c
-    ${CMAKE_SOURCE_DIR}/libs/temp.c
-)
-
 add_executable(run_tests
     ${TEST_SOURCES}
-    ${LIB_SOURCES}
 )
 
 # ---- Includes ----
@@ -27,6 +20,8 @@ target_include_directories(run_tests
         ${CMAKE_SOURCE_DIR}/libs
         ${CMAKE_CURRENT_SOURCE_DIR}
 )
+
+target_link_libraries(run_tests PRIVATE tatrlib)
 
 # ---- Define TATR_BIN ----
 
