@@ -63,28 +63,58 @@ export      Export (markdown/json)
 <summary><strong>Makefile</strong></summary>
 
 ### Basic usage
-sh make
+```sh
+make
+```
 ### Build configurations
-sh make BUILD=Debug # default make BUILD=Release
+```sh
+make BUILD=Debug   # default
+make BUILD=Release
+```
 ### Optional features
-sh make WARNINGS=1 # enable strict warnings (default) make ASAN=1 # enable AddressSanitizer make UBSAN=1 # enable UndefinedBehaviorSanitizer
+```sh
+make WARNINGS=1 # enable strict warnings (default)
+make ASAN=1     # enable AddressSanitizer
+make UBSAN=1    # enable UndefinedBehaviorSanitizer
+```
 You can combine options:
-sh make BUILD=Debug ASAN=1 UBSAN=1
+```sh
+make BUILD=Debug ASAN=1 UBSAN=1
+```
 ### Other targets
-sh make clean # remove build artifacts make install # install to /usr/local/bin (or PREFIX) make PREFIX=/usr/bin install make info # show current configuration
+```sh
+make clean   # remove build artifacts
+make install # install to /usr/local/bin (or PREFIX)
+make PREFIX=/usr/bin install
+make info # show current configuration
+```
 </details>
 
 <details>
 <summary><strong>CMake</strong></summary>
 
 ### Configure
-sh cmake -S . -B build
+```sh
+cmake -S . -B build
+```
 ### Build
-sh cmake --build build
+```sh
+cmake --build build
+```
 ### Build types
-sh cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+```sh
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+```
 ### Options
-sh cmake -S . -B build \ -DTATR_ENABLE_WARNINGS=ON \ -DTATR_ENABLE_ASAN=ON \ -DTATR_ENABLE_UBSAN=ON
+```sh
+cmake -S . -B build \
+    -DTATR_ENABLE_WARNINGS=ON \
+    -DTATR_ENABLE_ASAN=ON \
+    -DTATR_ENABLE_UBSAN=ON
+```
 ### Install
-sh cmake --install build
+```sh
+cmake --install build
+```
 </details>
