@@ -1,6 +1,6 @@
 # tatr
 
-[![CI](https://github.com/rinelu/tatr/actions/workflows/ci.yml/badge.svg)](https://github.com/rinelu/tatr/actions)
+[![CI](https://github.com/rinelu/tatr/actions/workflows/tatr.yaml/badge.svg)](https://github.com/rinelu/tatr/actions)
 
 **tatr** is a small, file-based issue tracker.  
 
