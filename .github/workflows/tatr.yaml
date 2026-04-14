@@ -1,4 +1,4 @@
-name: Tatr Build
+name: Tatr CI
 
 on:
   push:
@@ -6,40 +6,7 @@ on:
   pull_request:
 
 jobs:
-  macos:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Configure (Release)
-        run: |
-          cmake -S . -B build \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DTATR_ENABLE_WARNINGS=ON
-
-      - name: Build
-        run: cmake --build build -j
-
-      - name: Install
-        run: sudo cmake --install build
-
-      - name: Test (Release)
-        run: ./build/tests/run_tests
-
-      - name: Configure (Debug + Sanitizers)
-        run: |
-          cmake -S . -B build-debug \
-            -DCMAKE_BUILD_TYPE=Debug \
-            -DTATR_ENABLE_ASAN=ON \
-            -DTATR_ENABLE_UBSAN=ON
-
-      - name: Build (Debug)
-        run: cmake --build build-debug -j
-
-      - name: Test (Debug)
-        run: ./build-debug/tests/run_tests
-
-  ubuntu:
+  linux:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -59,14 +26,10 @@ jobs:
         run: |
           cmake -S . -B build \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_INSTALL_PREFIX=/usr/local \
             -DTATR_ENABLE_WARNINGS=ON
 
-      - name: Build
+      - name: Build (Release)
         run: cmake --build build -j
-
-      - name: Install
-        run: sudo cmake --install build
 
       - name: Test (Release)
         run: ./build/tests/run_tests
@@ -87,8 +50,77 @@ jobs:
         run: ./build-debug/tests/run_tests
 
 
-  windows:
+  macos:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        lang: [c, cpp]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure (Release)
+        run: |
+          if [ "${{ matrix.lang }}" = "c" ]; then
+            cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          else
+            cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=17
+          fi
+
+      - name: Build (Release)
+        run: cmake --build build -j
+
+      - name: Test (Release)
+        run: ./build/tests/run_tests
+
+      - name: Configure (Debug + Sanitizers)
+        run: |
+          if [ "${{ matrix.lang }}" = "c" ]; then
+            cmake -S . -B build-debug \
+              -DCMAKE_BUILD_TYPE=Debug \
+              -DTATR_ENABLE_ASAN=ON \
+              -DTATR_ENABLE_UBSAN=ON
+          else
+            cmake -S . -B build-debug \
+              -DCMAKE_BUILD_TYPE=Debug \
+              -DCMAKE_CXX_STANDARD=17 \
+              -DTATR_ENABLE_ASAN=ON \
+              -DTATR_ENABLE_UBSAN=ON
+          fi
+
+      - name: Build (Debug)
+        run: cmake --build build-debug -j
+
+      - name: Test (Debug)
+        run: ./build-debug/tests/run_tests
+
+
+  windows-msvc:
     runs-on: windows-latest
+    strategy:
+      matrix:
+        mode: ["", "/Zi"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build & Test (MSVC)
+        shell: cmd
+        run: |
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+
+          mkdir build
+          cd build
+
+          cmake .. -DCMAKE_BUILD_TYPE=Release
+          cmake --build . --config Release
+
+          tests\run_tests.exe
+
+
+  windows-mingw:
+    runs-on: windows-latest
+
     steps:
       - uses: actions/checkout@v4
 
@@ -108,16 +140,11 @@ jobs:
           cmake -S . -B build \
             -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_INSTALL_PREFIX=/mingw64 \
             -DTATR_ENABLE_WARNINGS=ON
 
-      - name: Build
+      - name: Build (Release)
         shell: msys2 {0}
         run: cmake --build build
-
-      - name: Install
-        shell: msys2 {0}
-        run: cmake --install build
 
       - name: Test (Release)
         shell: msys2 {0}
