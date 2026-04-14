@@ -30,6 +30,10 @@ set(TATR_SRC
     src/ui.c
 )
 
+file(GLOB TATR_EXPORT_SRC
+    src/cmd/export/*.c
+)
+
 set(TATR_CMD_SRC
     src/cmd/basic.c
     src/cmd/init.c
@@ -47,7 +51,7 @@ set(TATR_CMD_SRC
     src/cmd/detach.c
     src/cmd/tag.c
     src/cmd/status.c
-    src/cmd/export.c
+    ${TATR_EXPORT_SRC}
 )
 
 set(TATR_LIB_SRC

@@ -381,17 +381,18 @@ void clag_range_double(const char *name, double   lo, double   hi);
 //
 // Use clag_choices(...) for convenience:
 //   clag_choices("mode", "fast", "slow");
-void  clag__choices(Clag_Context *cx, const char *name, const char **choices);
+void  clagc__choices(Clag_Context *cx, const char *name, const char **choices);
+void  clag__choices(const char *name, const char **choices);
 #define CLAG__DEFINE_CHOICES(...)                      \
-    static const char *_clag_choices_##__LINE__[] = { \
+    static const char *_clag_choices_##__LINE__[] = {  \
         __VA_ARGS__, NULL                              \
     };
 #define  clag_choices(name, ...)      \
     CLAG__DEFINE_CHOICES(__VA_ARGS__) \
-    clag__choices(&clag_global_context, name, _clag_choices_##__LINE__);
+    clag__choices(name, _clag_choices_##__LINE__);
 #define  clagc_choices(cx, name, ...)     \
     CLAG__DEFINE_CHOICES(__VA_ARGS__)     \
-    clag__choices(cx, name, _clag_choices_##__LINE__);
+    clagc__choices(cx, name, _clag_choices_##__LINE__);
 
 // Custom validator hook.
 // Called after type parsing and built-in constraint checks succeed.
@@ -1009,11 +1010,16 @@ CLAG_DEFINE_RANGE(uint64, uint64_t, UINT64)
 CLAG_DEFINE_RANGE(double, double, DOUBLE)
 #undef CLAG_DEFINE_RANGE
 
-void clag__choices(Clag_Context *cx, const char *name, const char **choices)
+void clagc__choices(Clag_Context *cx, const char *name, const char **choices)
 {
     CLAG__LOOKUP(cx, name);
     assert(f->type == CLAG_TYPE_STR && "clag__choices: flag is not string");
     f->choices = choices;
+}
+
+void clag__choices(const char *name, const char **choices)
+{
+    clagc__choices(&clag_global_context, name, choices);
 }
 
 void clagc_validator(Clag_Context *cx, const char *name, ClagValidatorFn fn)
