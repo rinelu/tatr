@@ -13,6 +13,29 @@ We follow https://semver.org/:
 - Changes to issue file format are considered **MAJOR**
 - Command behavior should remain backward-compatible within MINOR
 
+# Changelogs
+
+## 1.4.0 (2026-04-14)
+
+- Add automatic exporter source listing
+- Add modular export system with pluggable `Exporter` interface
+- Add `export.h` and split exporters into separate modules (`markdown.c`, `json.c`)
+- Add dynamic exporter registry and lookup (`export_find`, `export_get`)
+- Add `--format / -f` flag to select export format
+- Add `--list-format / -L` to list supported export formats
+- Add `--pretty / -p` and `--minify / -m` options for JSON output
+
+- Implement full JSON exporter:
+- Move Markdown renderer into dedicated module (no behavior change)
+
+- Improve `clag` API:
+  - Split `clag__choices` into `clagc__choices` (context) and wrapper
+  - Fix linker error with `clag_global_context` across translation units
+
+- Refactor export command:
+  - Remove monolithic implementation
+  - Separate CLI handling from rendering logic
+
 ## 1.3.1 (2026-04-13)
 
 - Add `clag_reset()` call before command execution to avoid state leakage between commands

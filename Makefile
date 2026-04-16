@@ -19,6 +19,8 @@ SRC := \
 	$(SRC_DIR)/issue.c \
 	$(SRC_DIR)/ui.c
 
+EXPORT_SRC := $(wildcard $(CMD_DIR)/export/*.c)
+
 CMD_SRC := \
 	$(CMD_DIR)/basic.c \
 	$(CMD_DIR)/init.c \
@@ -35,7 +37,6 @@ CMD_SRC := \
 	$(CMD_DIR)/attachls.c \
 	$(CMD_DIR)/detach.c \
 	$(CMD_DIR)/tag.c \
-	$(CMD_DIR)/export.c \
 	$(CMD_DIR)/status.c
 
 LIB_SRC := \
@@ -43,7 +44,7 @@ LIB_SRC := \
 	$(LIB_DIR)/astring.c \
 	$(LIB_DIR)/temp.c
 
-ALL_SRC := $(SRC) $(CMD_SRC) $(LIB_SRC)
+ALL_SRC := $(SRC) $(CMD_SRC) $(EXPORT_SRC) $(LIB_SRC)
 OBJ := $(ALL_SRC:%.c=$(BUILD_DIR)/%.o)
 
 WARN_FLAGS := \

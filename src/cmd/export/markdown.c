@@ -1,7 +1,9 @@
-#include "cmd.h"
+#include "export.h"
 
-static void render_markdown(const Issue *iss, FILE *out)
+void export_markdown(const Issue *iss, FILE *out, const Export_Opts *opts)
 {
+    (void)opts;
+
     // Title
     fprintf(out, "# "SV_Fmt"\n\n", SV_Arg(iss->title));
 
@@ -67,93 +69,4 @@ static void render_markdown(const Issue *iss, FILE *out)
             fprintf(out, "- `%s`\n", files.items[i]);
         da_free(files);
     }
-}
-
-static void render_json(const Issue *iss, FILE *out)
-{
-    /* TODO: implement JSON renderer.
-     *
-     * Planned structure:
-     * {
-     *   "id":       "<id>",
-     *   "title":    "<title>",
-     *   "status":   "<status>",
-     *   "priority": "<priority>",
-     *   "tags":     ["<tag>", ...],
-     *   "created":  "<iso>",
-     *   "body":     "<body text>",
-     *   "comments": [
-     *     { "date": "...", "author": "...", "body": "..." },
-     *     ...
-     *   ],
-     *   "attachments": ["<filename>", ...]
-     * }
-     *
-     * Needs a small JSON string-escaper for body/title content.
-     */
-    (void)iss;
-    (void)out;
-    log_error("JSON export is not yet implemented");
-}
-
-int cmd_export(int argc, char **argv)
-{
-    bool  *fmt_markdown = clag_bool("markdown", 'M', true,  "Export as Markdown");
-    bool  *fmt_json     = clag_bool("json",     'J', false, "Export as JSON (not yet implemented)");
-    char **output       = clag_str ("output",   'o', "stdout",  "Write to file instead of stdout");
-
-    clag_usage("<id> [options]");
-    clag_mutex("json", "markdown");
-
-    if (!clag_parse(argc, argv)) {
-        clag_print_error(stderr);
-        clag_print_options(stderr);
-        return 1;
-    }
-
-    if (clag_rest_argc() < 1) {
-        log_error("missing issue ID");
-        log_msg("usage: tatr export <id> [--markdown] [--json] [--output <file>]");
-        return 1;
-    }
- 
-    const char *id = clag_rest_argv()[0];
-
-    size_t tmark = temp_save();
-    int    result = 1;
-    Issue  iss;
-
-    if (!issue_load(id, &iss)) {
-        log_error("issue '%s' not found", id);
-        goto defer;
-    }
-
-    // Open output destination
-    FILE *out = stdout;
-    if (*output && **output) {
-        out = fopen(*output, "w");
-        if (!out) {
-            log_error("cannot open output file '%s'", *output);
-            goto defer;
-        }
-    }
-
-    if (*fmt_json) {
-        log_error("JSON export is not yet implemented (use --markdown)");
-        goto defer;
-    }
-
-    if (*fmt_markdown) render_markdown(&iss, out);
-
-    if (out != stdout) {
-        fclose(out);
-        log_info("Exported issue %s -> %s", id, *output);
-    }
-
-    result = 0;
-
-defer:
-    issue_free(&iss);
-    temp_rewind(tmark);
-    return result;
 }
