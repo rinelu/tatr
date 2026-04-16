@@ -1,4 +1,5 @@
 #include "cmd.h"
+#include "temp.h"
 
 static const char *EDITABLE_FIELDS[] = {
     "title", "status", "priority", "tags", NULL
@@ -41,7 +42,7 @@ int cmd_edit(int argc, char **argv)
         return 1;
     }
 
-    size_t tmark = temp_save();
+    Temp_Checkpoint tmark = temp_save();
     int result = 1;
     Issue iss;
     if (!issue_load(id, &iss)) {

@@ -28,7 +28,7 @@ int cmd_comment(int argc, char **argv)
         return 1;
     }
 
-    size_t tmark = temp_save();
+    Temp_Checkpoint tmark = temp_save();
     bool result = 1;
     char ts[64];
     timestamp_iso(ts, sizeof(ts));

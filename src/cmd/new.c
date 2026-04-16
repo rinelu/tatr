@@ -70,7 +70,7 @@ int cmd_new(int argc, char **argv)
 
     if (!require_repo()) return 1;
 
-    size_t tmark = temp_save();
+    Temp_Checkpoint tmark = temp_save();
     int result = 1;
     String_Builder id = {0};
     generate_issue_id(&id);

@@ -66,7 +66,7 @@ int cmd_list(int argc, char **argv)
     if (!require_repo()) return 1;
 
     int result = 1;
-    size_t tmark = temp_save(); 
+    Temp_Checkpoint tmark = temp_save(); 
     File_Paths ids = {0};
     if (!fs_read_dir(".tatr/issues", &ids)) {
         log_error("cannot read issues directory");

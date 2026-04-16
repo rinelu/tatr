@@ -18,7 +18,7 @@ int cmd_detach(int argc, char **argv)
 
     if (!require_repo()) return 1;
 
-    size_t tmark = temp_save();
+    Temp_Checkpoint tmark = temp_save();
     int result = 1;
 
     const char *id       = clag_rest_argv()[0];

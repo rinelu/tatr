@@ -1,37 +1,132 @@
 #include "temp.h"
 
+#include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <assert.h>
 
-// TODO: use proper arena
+#ifndef TEMP_BLOCK_DEFAULT_SIZE
+#define TEMP_BLOCK_DEFAULT_SIZE (64 * 1024)
+#endif
 
-static size_t temp_size = 0;
-static char temp[TEMP_CAPACITY] = {0};
+#ifndef TEMP_ALIGNMENT
+#define TEMP_ALIGNMENT (sizeof(void *))
+#endif
+
+struct Temp_Block {
+    size_t capacity;
+    size_t used;
+    struct Temp_Block *next;
+    char data[];
+};
+
+typedef struct {
+    Temp_Block *head;
+    Temp_Block *current;
+} Temp_Arena;
+
+static Temp_Arena arena = {0};
+
+static size_t align_up(size_t x, size_t align)
+{
+    assert((align & (align - 1)) == 0 && "alignment must be power of two");
+    return (x + align - 1) & ~(align - 1);
+}
+
+static Temp_Block *temp_block_create(size_t min_capacity)
+{
+    size_t cap = TEMP_BLOCK_DEFAULT_SIZE;
+    if (cap < min_capacity) cap = min_capacity;
+
+    Temp_Block *block = (Temp_Block *)malloc(sizeof(Temp_Block) + cap);
+    assert(block && "temp: out of memory");
+
+    block->capacity = cap;
+    block->used = 0;
+    block->next = NULL;
+
+    return block;
+}
+
+void temp_init(void)
+{
+    arena.head = NULL;
+    arena.current = NULL;
+}
+
+void temp_destroy(void)
+{
+    temp_reset();
+}
 
 void *temp_alloc(size_t size)
 {
-    assert(temp_size + size <= TEMP_CAPACITY && "temp: not enough memory");
+    return temp_alloc_aligned(size, TEMP_ALIGNMENT);
+}
 
-    void *ptr = temp + temp_size;
-    temp_size += size;
+void *temp_alloc_aligned(size_t size, size_t alignment)
+{
+    if (size == 0) return NULL;
+
+    if (!arena.current)
+        arena.head = arena.current = temp_block_create(size + alignment);
+
+    Temp_Block *b = arena.current;
+    size_t offset = align_up(b->used, alignment);
+    if (offset + size > b->capacity) {
+        Temp_Block *new_block = temp_block_create(size + alignment);
+        b->next = new_block;
+        arena.current = new_block;
+        b = new_block;
+
+        offset = 0;
+    }
+
+    void *ptr = b->data + offset;
+    b->used = offset + size;
+
     return ptr;
 }
 
 void temp_reset(void)
 {
-    temp_size = 0;
+    Temp_Block *b = arena.head;
+    while (b) {
+        Temp_Block *next = b->next;
+        free(b);
+        b = next;
+    }
+
+    arena.head = NULL;
+    arena.current = NULL;
 }
 
-size_t temp_save(void)
+Temp_Checkpoint temp_save(void)
 {
-    return temp_size;
+    Temp_Checkpoint cp;
+    cp.block = arena.current;
+    cp.used  = arena.current ? arena.current->used : 0;
+    return cp;
 }
 
-void temp_rewind(size_t checkpoint)
+void temp_rewind(Temp_Checkpoint cp)
 {
-    assert(checkpoint <= temp_size);
-    temp_size = checkpoint;
+    if (!cp.block) {
+        temp_reset();
+        return;
+    }
+
+    Temp_Block *b = cp.block->next;
+    while (b) {
+        Temp_Block *next = b->next;
+        free(b);
+        b = next;
+    }
+
+    cp.block->next = NULL;
+    cp.block->used = cp.used;
+
+    arena.current = cp.block;
 }
 
 char *temp_strdup(const char *cstr)
@@ -87,5 +182,6 @@ const char *temp_sv_to_cstr(String_View sv)
 
     memcpy(buf, sv.data, sv.count);
     buf[sv.count] = '\0';
+
     return buf;
 }
