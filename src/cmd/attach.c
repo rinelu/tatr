@@ -12,7 +12,7 @@ int cmd_attach(int argc, char **argv)
     if (!require_repo()) return 1;
 
     if (clag_rest_argc() < 2) {
-        log_error("Usage: tatr attach <id> <file> [<file> ...]");
+        clag_print_help(stderr);
         return 1;
     }
 

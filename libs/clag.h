@@ -1692,8 +1692,11 @@ void clagc_print_help(Clag_Context *cx, FILE *s)
 {
     const char *prog = cx->program_name   ? cx->program_name   : "program";
     const char *syn  = cx->usage_synopsis ? cx->usage_synopsis : "[options]";
-    fprintf(s, "Usage: %s %s\n\nOptions:\n", prog, syn);
-    clagc_print_options(cx, s);
+    fprintf(s, "Usage: %s %s\n", prog, syn);
+    if (clagc_count(cx) > 0) {
+        fprintf(s, "\nOptions:\n");
+        clagc_print_options(cx, s);
+    }
 
     if (cx->examples_count > 0) {
         fprintf(s, "\nExamples:\n");
