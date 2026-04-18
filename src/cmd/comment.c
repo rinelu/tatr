@@ -12,13 +12,12 @@ int cmd_comment(int argc, char **argv)
         clag_print_error(stderr);
         return 1;
     }
+    if (!require_repo()) return 1;
 
     if (clag_rest_argc() < 1) {
         log_error("Missing issue ID");
         return 1;
     }
-
-    if (!require_repo()) return 1;
 
     const char *id = clag_rest_argv()[0];
     Issue iss;

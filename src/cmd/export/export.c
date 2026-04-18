@@ -34,11 +34,11 @@ void export_list_all(void)
 
 int cmd_export(int argc, char **argv)
 {
-    char **format       = clag_str("format",       'f',        "markdown", "Export format");
-    char **output       = clag_str ("output",      'o', NULL,  "Write to file instead of stdout");
-    bool  *ls_format    = clag_bool("list-format", 'L', NULL,  "List all supported format.");
-    bool  *pretty       = clag_bool("pretty",      'p', true,  "Pretty JSON output");
-    bool  *minify       = clag_bool("minify",      'm', false, "Minified JSON output");
+    char **format    = clag_str("format",       'f',        "markdown", "Export format");
+    char **output    = clag_str ("output",      'o', NULL,  "Write to file instead of stdout");
+    bool  *ls_format = clag_bool("list-format", 'L', NULL,  "List all supported format.");
+    bool  *pretty    = clag_bool("pretty",      'p', true,  "Pretty JSON output");
+    bool  *minify    = clag_bool("minify",      'm', false, "Minified JSON output");
 
     clag_choices("format", "markdown", "json");
     clag_usage("<id> [options]");
@@ -54,13 +54,13 @@ int cmd_export(int argc, char **argv)
         return 0;
     }
 
+    if (!require_repo()) return 1;
+
     if (clag_rest_argc() < 1) {
         log_error("missing issue ID");
         log_msg("usage: tatr export <id> [--format=] [--output <file>]");
         return 1;
     }
-
-    if (!require_repo()) return 1;
 
     const char *id = clag_rest_argv()[0];
 

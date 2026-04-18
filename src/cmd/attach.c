@@ -9,11 +9,12 @@ int cmd_attach(int argc, char **argv)
         return 1;
     }
 
+    if (!require_repo()) return 1;
+
     if (clag_rest_argc() < 2) {
         log_error("Usage: tatr attach <id> <file> [<file> ...]");
         return 1;
     }
-    if (!require_repo()) return 1;
 
     const char *id = clag_rest_argv()[0];
 

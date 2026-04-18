@@ -18,6 +18,7 @@ int cmd_tag(int argc, char **argv)
         clag_print_error(stderr);
         return 1;
     }
+    if (!require_repo()) return 1;
 
     if (clag_rest_argc() < 1) {
         log_error("Missing issue ID");
@@ -89,6 +90,7 @@ int cmd_tag(int argc, char **argv)
 defer:
     sb_free(sb);
     da_free(owned);
+    da_free(logtags);
     issue_free(&iss);
     temp_rewind(tmark);
 

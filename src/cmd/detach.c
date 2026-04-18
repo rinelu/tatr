@@ -9,13 +9,12 @@ int cmd_detach(int argc, char **argv)
         clag_print_error(stderr);
         return 1;
     }
+    if (!require_repo()) return 1;
 
     if (clag_rest_argc() < 2) {
         log_error("Usage: tatr detach <id> <filename> [--yes]");
         return 1;
     }
-
-    if (!require_repo()) return 1;
 
     Temp_Checkpoint tmark = temp_save();
     int result = 1;

@@ -1,3 +1,4 @@
+#include "astring.h"
 #include "cmd.h"
 
 int cmd_delete(int argc, char **argv)
@@ -9,13 +10,12 @@ int cmd_delete(int argc, char **argv)
         clag_print_error(stderr);
         return 1;
     }
+    if (!require_repo()) return 1;
 
     if (clag_rest_argc() < 1) {
         log_error("missing issue ID");
         return 1;
     }
-
-    if (!require_repo()) return 1;
 
     const char *id = clag_rest_argv()[0];
 
@@ -33,7 +33,7 @@ int cmd_delete(int argc, char **argv)
         goto defer;
     }
 
-    tatrlog_append(TATRLOG_DELETE, id, iss.title.data);
+    tatrlog_append(TATRLOG_DELETE, id, temp_sv_to_cstr(iss.title));
     if (!fs_delete_recursive(iss.dpath)) {
         log_error("failed to delete issue '%s'", id);
         goto defer;

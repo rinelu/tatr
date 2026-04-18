@@ -22,12 +22,12 @@ int cmd_search(int argc, char **argv)
         clag_print_error(stderr);
         return 1;
     }
+    if (!require_repo()) return 1;
 
     if (clag_rest_argc() < 1) {
         log_error("Missing search query");
         return 1;
     }
-    if (!require_repo()) return 1;
 
     int result = 1;
     Temp_Checkpoint tmark = temp_save();

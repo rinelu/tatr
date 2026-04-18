@@ -40,8 +40,6 @@ typedef struct {
         }                                                     \
     } while (0);
 
-const char *temp_sv_to_cstr(String_View sv);
-
 String_View sv_slice_while(String_View *sv, int (*p)(int x));
 String_View sv_slice_by_delim(String_View *sv, char delim);
 String_View sv_slice_left(String_View *sv, size_t n);

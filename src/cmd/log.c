@@ -139,7 +139,6 @@ int cmd_log(int argc, char **argv)
         clag_print_error(stderr);
         return 1;
     }
-
     if (!require_repo()) return 1;
 
     // Positional arg is shorthand for --id

@@ -98,8 +98,8 @@ int cmd_status(int argc, char **argv)
         clag_print_error(stderr);
         return 1;
     }
-
     if (!require_repo()) return 1;
+
 
     File_Paths ids = {0};
     if (!fs_read_dir(".tatr/issues", &ids)) {

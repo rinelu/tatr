@@ -61,7 +61,6 @@ int cmd_list(int argc, char **argv)
 {
     ListOptions opt = {0};
     if (!list__parse_opts(argc, argv, &opt)) return 1;
-
     if (!require_repo()) return 1;
 
     int result = 1;

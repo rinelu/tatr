@@ -22,9 +22,8 @@ int main(int argc, char **argv)
     ui_init( .show_header = true );
 
     const char *cmd_name = argv[1];
-
-    int sub_argc    = argc - 1;
-    char **sub_argv = argv + 1;
+    int sub_argc         = argc - 1;
+    char **sub_argv      = argv + 1;
 
     const Command *cmd = find_command(cmd_name);
     if (!cmd) {
@@ -35,6 +34,5 @@ int main(int argc, char **argv)
 
     clag_reset();
     int result = cmd->fn(sub_argc, sub_argv);
-    // int result = cmd->fn(sub_argc, sub_argv) ? 1 : 0;
     return result;
 }
