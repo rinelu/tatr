@@ -3,8 +3,9 @@
 
 int cmd_delete(int argc, char **argv)
 {
-    bool *yes = clag_bool("yes", 'y', false, "Skip confirmation prompt");
-    clag_usage("<id> [--yes]");
+    bool *force = clag_bool("force", 'f', false, "Ignore missing issues and suppress errors");
+    bool *interactive = clag_bool("interactive", 'i', false, "Prompt before delete");
+    clag_usage("<id>... [option]");
 
     if (!clag_parse(argc, argv)) {
         clag_print_error(stderr);
@@ -17,32 +18,39 @@ int cmd_delete(int argc, char **argv)
         return 1;
     }
 
-    const char *id = clag_rest_argv()[0];
-
     Temp_Checkpoint tmark = temp_save();
-    int result = 1;
-    Issue iss;
-    if (!issue_load(id, &iss)) {
-        log_error("issue '%s' not found", id);
-        goto defer;
+    int result = 0;
+    for (int i = 0; i < clag_rest_argc(); i++) {
+        const char *id = clag_rest_argv()[i];
+        Issue iss;
+        if (!issue_load(id, &iss)) {
+            log_error("issue '%s' not found", id);
+            result = 1;
+            continue;
+        }
+
+        if (*interactive) {
+            if (!log_confirm("Delete issue %s ("SV_Fmt")?", id, SV_Arg(iss.title))) {
+                log_msg("Skipped %s", id);
+                issue_free(&iss);
+                continue;
+            }
+        }
+
+        if (!fs_delete_recursive(iss.dpath)) {
+            if (!*force) {
+                log_error("failed to delete issue '%s'", id);
+                result = 1;
+            }
+            issue_free(&iss);
+            continue;
+        }
+
+        tatrlog_append(TATRLOG_DELETE, id, temp_sv_to_cstr(iss.title));
+        log_info("Deleted issue %s", id);
+        issue_free(&iss);
     }
 
-    if (!*yes && !log_confirm("Delete issue %s ("SV_Fmt")?", id, SV_Arg(iss.title))) {
-        log_msg("Aborted.");
-        result = 0;
-        goto defer;
-    }
-
-    tatrlog_append(TATRLOG_DELETE, id, temp_sv_to_cstr(iss.title));
-    if (!fs_delete_recursive(iss.dpath)) {
-        log_error("failed to delete issue '%s'", id);
-        goto defer;
-    }
-
-    log_info("Deleted issue %s", id);
-    result = 0;
-defer:
-    issue_free(&iss);
     temp_rewind(tmark);
     return result;
 }
