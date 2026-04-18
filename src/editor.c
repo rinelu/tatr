@@ -14,20 +14,26 @@
 extern char **environ;
 #endif
 
-static int split_args(const char *cmd, char **argv, int max_args)
+static int split_args(char *buf, char **argv, int max_args)
 {
     int argc = 0;
+    char *p  = buf;
 
-    while (*cmd && argc < max_args - 1) {
-        while (*cmd == ' ') cmd++;
-        if (!*cmd) break;
+    while (*p && argc < max_args - 1) {
+        while (*p == ' ' || *p == '\t') p++;
+        if (!*p) break;
 
-        argv[argc++] = (char *)cmd;
-
-        while (*cmd && *cmd != ' ') cmd++;
-        if (*cmd) {
-            *(char *)cmd = '\0';
-            cmd++;
+        if (*p == '\'') {
+            // Single-quoted token
+            p++;
+            argv[argc++] = p;
+            while (*p && *p != '\'') p++;
+            if (*p == '\'') *p++ = '\0';
+        } else {
+            // Unquoted token
+            argv[argc++] = p;
+            while (*p && *p != ' ' && *p != '\t') p++;
+            if (*p) *p++ = '\0';
         }
     }
 
@@ -39,49 +45,52 @@ static int run_editor(const char *editor, const char *path)
 {
     char buf[256];
     snprintf(buf, sizeof(buf), "%s", editor);
+
     char *argv[32];
     int argc = split_args(buf, argv, 32);
-
-    if (argc == 0) return -1;
+    if (argc == 0) {
+        log_error("EDITOR is empty or invalid");
+        return -1;
+    }
 
     argv[argc++] = (char *)path;
     argv[argc] = NULL;
 
 #ifdef _WIN32
-    char cmdline[512] = {0};
+    String_Builder cmdline = {0};
     for (int i = 0; argv[i]; i++) {
-        if (i > 0) strcat(cmdline, " ");
-        strcat(cmdline, argv[i]);
+        if (i > 0) sb_append_cstr(&cmdline, " ");
+        sb_append_cstr(&cmdline, "\"");
+        for (const char *c = argv[i]; *c; c++) {
+            if (*c == '"') sb_append_cstr(&cmdline, "\\\"");
+            else           sb_append_char(&cmdline, *c);
+        }
+        sb_append_cstr(&cmdline, "\"");
     }
+    sb_append_null(&cmdline);
 
     STARTUPINFOA si = {0};
     PROCESS_INFORMATION pi = {0};
     si.cb = sizeof(si);
 
-    if (!CreateProcessA(NULL, cmdline, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi))
-        return -1;
+    BOOL ok = CreateProcessA(NULL, cmdline.items, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
+    sb_free(cmdline);
+    if (!ok) return -1;
 
     WaitForSingleObject(pi.hProcess, INFINITE);
     DWORD exit_code = 0;
     GetExitCodeProcess(pi.hProcess, &exit_code);
-
     CloseHandle(pi.hProcess);
     CloseHandle(pi.hThread);
     return (int)exit_code;
 #else
-
     pid_t pid;
     int status;
-
     if (posix_spawnp(&pid, argv[0], NULL, NULL, argv, environ) != 0)
         return -1;
     if (waitpid(pid, &status, 0) < 0)
         return -1;
-
-    if (WIFEXITED(status))
-        return WEXITSTATUS(status);
-
-    return -1;
+    return WIFEXITED(status) ? WEXITSTATUS(status) : -1;
 #endif
 }
 
@@ -112,7 +121,12 @@ bool editor_edit(const char *content, size_t content_len, const char *suffix, St
     }
     FILE *f = fopen(tmp_path, "wb");
 #else
-    int suffix_len = suffix ? (int)strlen(suffix) : 0;
+    size_t suffix_len_sz = suffix ? strlen(suffix) : 0;
+    if (suffix_len_sz > 16) {
+        log_error("editor suffix too long");
+        return false;
+    }
+    int suffix_len = (int)suffix_len_sz;
     int fd = mkstemps(tmp_path, suffix_len);
     if (fd < 0) {
         log_error("cannot create temp file");

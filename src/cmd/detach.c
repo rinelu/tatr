@@ -16,16 +16,16 @@ int cmd_detach(int argc, char **argv)
         return 1;
     }
 
-    Temp_Checkpoint tmark = temp_save();
-    int result = 1;
 
     const char *id       = clag_rest_argv()[0];
     const char *filename = clag_rest_argv()[1];
 
+    Temp_Checkpoint tmark = temp_save();
+    int result = 1;
     Issue iss;
     if (!issue_load(id, &iss)) {
         log_error("Issue '%s' not found", id);
-        return 1;
+        goto defer;
     }
 
     const char *src = fs_path(iss.attach_path, filename);
@@ -47,11 +47,8 @@ int cmd_detach(int argc, char **argv)
     }
 
     tatrlog_append(TATRLOG_DETACH, id, temp_sprintf("file=%s", filename));
-
     log_info("Removed '%s' from issue %s", filename, id);
-
     result = 0;
-
 defer:
     issue_free(&iss);
     temp_rewind(tmark);

@@ -20,13 +20,13 @@ int cmd_comment(int argc, char **argv)
     }
 
     const char *id = clag_rest_argv()[0];
+    Temp_Checkpoint tmark = temp_save();
     Issue iss;
     if (!issue_load(id, &iss)) {
         log_error("Issue '%s' not found", id);
         return 1;
     }
 
-    Temp_Checkpoint tmark = temp_save();
     bool result = 1;
     char ts[64];
     timestamp_iso(ts, sizeof(ts));

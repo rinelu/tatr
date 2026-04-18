@@ -1,7 +1,7 @@
 #include "issue.h"
 #include "astring.h"
 #include "fs.h"
-#include "temp.h"
+#include "log.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -54,6 +54,20 @@ static void issue__update(Issue *iss)
     issue_get_field(iss, "created",  &iss->created);
 }
 
+static bool issue__id_is_safe(const char *id)
+{
+    if (!id || !*id)          return false;
+    if (strcmp(id, ".")  == 0) return false;
+    if (strcmp(id, "..") == 0) return false;
+
+    for (const char *p = id; *p; p++) {
+        if (*p == '/' || *p == '\\') return false;
+        // Reject all control characters
+        if ((unsigned char)*p < 0x20) return false;
+    }
+    return true;
+}
+
 bool issue_get_field(Issue *iss, const char *key, String_View *out)
 {
     String_View cursor = iss->header;
@@ -75,6 +89,8 @@ bool issue_get_field(Issue *iss, const char *key, String_View *out)
 
 bool issue_replace_field(Issue *iss, const char *field, const char *value)
 {
+    if (!iss->header.data) return false;
+
     String_View cursor = iss->header;
     String_Builder tmp = {0};
     bool replaced = false;
@@ -118,16 +134,21 @@ bool issue_load(const char *id, Issue *out)
 {
     memset(out, 0, sizeof(*out));
 
+    if (!issue__id_is_safe(id)) {
+        log_error("invalid issue ID '%s'", id);
+        return false;
+    }
+    
     const char *dir_path = fs_path(".tatr/issues", id);
     const char *path = fs_path(dir_path, "issue.tatr");
     out->attach_path = fs_path(dir_path, "attachments");
-    out->path = path;
+    out->path  = path;
     out->dpath = dir_path;
 
     if (!fs_read_file(path, &out->raw_sb))
         return false;
 
-    out->id     = sv_from_cstr(id);
+    out->id = sv_from_cstr(id);
     issue__update(out);
     return true;
 }
