@@ -10,7 +10,6 @@ int cmd_comment(int argc, char **argv)
 
     if (!clag_parse(argc, argv)) {
         clag_print_error(stderr);
-        clag_print_options(stderr);
         return 1;
     }
 
@@ -47,6 +46,7 @@ int cmd_comment(int argc, char **argv)
         log_error("Cannot write comment to issue %s", id);
         goto defer;
     }
+    tatrlog_append(TATRLOG_COMMENT, id, temp_sprintf("author=%s", *author ? *author : ""));
 
     log_info("Comment added to issue %s", id);
     result = 0;

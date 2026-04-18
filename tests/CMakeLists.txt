@@ -7,6 +7,7 @@ set(TEST_SOURCES
     test_lifecycle_org.c
     test_attachments.c
     test_status_meta.c
+    test_export.c
 )
 
 add_executable(run_tests

@@ -32,6 +32,11 @@ void sb_pad_align(String_Builder *sb, size_t size)
 
 // --------------------------
 
+bool sv_empty(String_View sv)
+{
+    return sv.count == 0;
+}
+
 String_View sv_slice_while(String_View *sv, int (*p)(int x))
 {
     size_t i = 0;

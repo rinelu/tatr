@@ -20,7 +20,6 @@ int cmd_search(int argc, char **argv)
 
     if (!clag_parse(argc, argv)) {
         clag_print_error(stderr);
-        clag_print_options(stderr);
         return 1;
     }
 

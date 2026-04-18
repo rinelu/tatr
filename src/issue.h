@@ -22,6 +22,7 @@ typedef struct {
     String_Builder raw_sb;
 } Issue;
 
+bool issue_init_empty(Issue *iss);
 bool issue_load(const char *id, Issue *out);
 bool issue_save(Issue *iss);
 void issue_free(Issue *iss);

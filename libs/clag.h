@@ -1619,7 +1619,7 @@ static void clag__print_flag_row(Clag_Context *cx, FILE *s, const Clag *f, int n
         DAPP(" {");
         for (const char **c = f->choices; *c; c++) {
             if (c != f->choices) DAPP("|");
-            DAPP("%s", *c);
+            DAPP(" %s ", *c);
         }
         DAPP("}");
     }

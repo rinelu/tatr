@@ -27,13 +27,18 @@ static void issue__split_header_body(String_View content, String_View *header, S
 
 void issue__combine_raw(String_View header, String_View body, String_Builder *out)
 {
-    sb_free(*out);
-    *out = (String_Builder){0};
+    String_Builder tmp = {0};
+    sb_append_sv(&tmp, header);
 
-    sb_append_sv(out, header);
-    sb_append_cstr(out, "---\n");
-    sb_append_sv(out, body);
-    sb_append_null(out);
+    if (header.count > 0 && header.data[header.count - 1] != '\n') {
+        sb_append_char(&tmp, '\n');
+    }
+
+    sb_append_cstr(&tmp, "---\n");
+    sb_append_sv(&tmp, body);
+
+    sb_free(*out);
+    *out = tmp;
 }
 
 static void issue__update(Issue *iss)
@@ -94,13 +99,18 @@ bool issue_replace_field(Issue *iss, const char *field, const char *value)
         return false;
     }
 
-    sb_append_null(&tmp);
     issue__combine_raw(sb_to_sv(tmp), iss->body, &iss->raw_sb);
 
     sb_free(tmp);
 
     issue__update(iss);
 
+    return true;
+}
+
+bool issue_init_empty(Issue *iss)
+{
+    memset(iss, 0, sizeof(*iss));
     return true;
 }
 
@@ -143,7 +153,6 @@ bool issue_save(Issue *iss)
         goto defer;
 
     result = true;
-    fs_delete_file(tmp_path.items);
 defer:
     sb_free(tmp_path);
     return result;

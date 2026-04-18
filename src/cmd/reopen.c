@@ -31,6 +31,7 @@ int cmd_reopen(int argc, char **argv)
         goto defer;
     }
 
+    tatrlog_append(TATRLOG_REOPEN, id, "");
     log_info("Reopened issue %s", id);
     result = 0;
     issue_save(&iss);

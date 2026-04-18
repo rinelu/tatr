@@ -7,7 +7,6 @@ int cmd_delete(int argc, char **argv)
 
     if (!clag_parse(argc, argv)) {
         clag_print_error(stderr);
-        clag_print_options(stderr);
         return 1;
     }
 
@@ -34,6 +33,7 @@ int cmd_delete(int argc, char **argv)
         goto defer;
     }
 
+    tatrlog_append(TATRLOG_DELETE, id, iss.title.data);
     if (!fs_delete_recursive(iss.dpath)) {
         log_error("failed to delete issue '%s'", id);
         goto defer;

@@ -28,6 +28,8 @@ set(TATR_SRC
     src/main.c
     src/issue.c
     src/ui.c
+    src/editor.c
+    src/tatrlog.c
 )
 
 file(GLOB TATR_EXPORT_SRC
@@ -51,6 +53,7 @@ set(TATR_CMD_SRC
     src/cmd/detach.c
     src/cmd/tag.c
     src/cmd/status.c
+    src/cmd/log.c
     ${TATR_EXPORT_SRC}
 )
 

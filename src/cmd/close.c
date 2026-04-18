@@ -14,7 +14,6 @@ int cmd_close(int argc, char **argv)
 
     if (!clag_parse(argc, argv)) {
         clag_print_error(stderr);
-        clag_print_options(stderr);
         return 1;
     }
 
@@ -41,8 +40,10 @@ int cmd_close(int argc, char **argv)
         log_error("tatr: failed to close issue %s", id);
         goto defer;
     }
+    tatrlog_append(TATRLOG_CLOSE, id, temp_sprintf("status=%s", new_status));
     log_info("Closed issue %s  (status: %s)", id, new_status);
     issue_save(&iss);
+
     result = 0;
 defer:
     issue_free(&iss);

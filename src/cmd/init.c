@@ -1,4 +1,6 @@
 #include "cmd.h"
+#include "fs.h"
+#include "global.h"
 
 int cmd_init(int argc, char **argv)
 {
@@ -7,7 +9,6 @@ int cmd_init(int argc, char **argv)
 
     if (!clag_parse(argc, argv)) {
         clag_print_error(stderr);
-        clag_print_options(stderr);
         return 1;
     }
 
@@ -27,9 +28,7 @@ int cmd_init(int argc, char **argv)
         sb_append_cstr(&cfg, "# tatr configuration\n");
         sb_append_cstr(&cfg, "default_status: open\n");
         sb_append_cstr(&cfg, "default_priority: normal\n");
-
-        sb_append_null(&cfg);
-        bool ok = fs_write_file(".tatr/config", cfg.items, cfg.count - 1);
+        bool ok = fs_write_file(".tatr/config", cfg.items, cfg.count);
 
         sb_free(cfg);
 
@@ -39,6 +38,7 @@ int cmd_init(int argc, char **argv)
         }
     }
 
-    log_msg("Initialized empty tatr repository in .tatr/\n");
+    fs_write_file(TATRLOG_PATH, "", 0);
+    log_msg("Initialized empty tatr repository in .tatr/");
     return 0;
 }

@@ -12,6 +12,7 @@
 #include "issue.h"
 #include "ui.h"
 #include "temp.h"
+#include "tatrlog.h"
 
 inline static bool require_repo(void)
 {
@@ -40,6 +41,7 @@ int cmd_attachls(int argc, char **argv);
 int cmd_detach  (int argc, char **argv);
 int cmd_status  (int argc, char **argv);
 int cmd_export  (int argc, char **argv);
+int cmd_log(int argc, char **argv);
 
 typedef int (*CmdFn)(int argc, char **argv);
 
@@ -65,6 +67,7 @@ static const Command commands[] = {
     { "close",    "Mark an issue as closed",                                cmd_close    },
     { "reopen",   "Reopen a closed issue",                                  cmd_reopen   },
     { "export",   "Export an issue to Markdown or JSON",                    cmd_export   },
+    { "log",      "Show history of changes",                                cmd_log      },
 
     { "Organization", NULL, NULL },
     { "search",   "Full-text search across all issue files",                cmd_search   },

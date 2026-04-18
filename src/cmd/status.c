@@ -24,25 +24,6 @@ typedef struct {
     size_t capacity;
 } Issues;
 
-static time_t parse_iso(String_View sv)
-{
-    char buf[32] = {0};
-
-    size_t n = sv.count < sizeof(buf)-1 ? sv.count : sizeof(buf)-1;
-    memcpy(buf, sv.data, n);
-    buf[n] = '\0';
-
-    struct tm tm = {0};
-    if (sscanf(buf, "%d-%d-%dT%d:%d:%d",
-               &tm.tm_year, &tm.tm_mon, &tm.tm_mday,
-               &tm.tm_hour, &tm.tm_min, &tm.tm_sec) != 6)
-        return 0; // fallback (invalid time)
-
-    tm.tm_year -= 1900;
-    tm.tm_mon  -= 1;
-    return mktime(&tm);
-}
-
 // extract latest comment date if exists
 static String_View issue_last_updated(const Issue *iss)
 {
@@ -66,6 +47,8 @@ static bool ii_is_closed(const IssueInfo *iss)
 {
     return sv_eq_cstr(iss->status, "closed") || sv_eq_cstr(iss->status, "wontfix");
 }
+
+#define parse_iso(x) parse_time_n(x.data, x.count)
 
 static int cmp_recent(const void *a, const void *b)
 {
@@ -113,7 +96,6 @@ int cmd_status(int argc, char **argv)
 
     if (!clag_parse(argc, argv)) {
         clag_print_error(stderr);
-        clag_print_options(stderr);
         return 1;
     }
 
@@ -271,3 +253,4 @@ int cmd_status(int argc, char **argv)
     return 0;
 }
 
+#undef parse_iso

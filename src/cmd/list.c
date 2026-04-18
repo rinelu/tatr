@@ -43,7 +43,6 @@ static bool list__parse_opts(int argc, char **argv, ListOptions *opt)
 
     if (!clag_parse(argc, argv)) {
         clag_print_error(stderr);
-        clag_print_options(stderr);
         return false;
     }
 

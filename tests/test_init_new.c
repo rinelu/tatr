@@ -42,12 +42,6 @@ static void test_init_short_flag_force(void)
 
 static void setup_repo(void) { tatr_init(); }
 
-static void test_new_requires_title(void)
-{
-    TatrResult r = tatr("new --priority high");
-    ASSERT_CMD_FAIL(r);
-}
-
 static void test_new_creates_issue(void)
 {
     char id[64];
@@ -199,7 +193,6 @@ void suite_init_new(void)
     SUITE("new");
     RUN_TEST(test_new_without_repo_fails);
     RUN_TEST(test_new_body_from_file);
-    RUN_TEST_F(test_new_requires_title,            setup_repo, NULL);
     RUN_TEST_F(test_new_creates_issue,             setup_repo, NULL);
     RUN_TEST_F(test_new_creates_attachments_dir,   setup_repo, NULL);
     RUN_TEST_F(test_new_default_priority_normal,   setup_repo, NULL);

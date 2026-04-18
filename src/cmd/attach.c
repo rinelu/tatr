@@ -60,7 +60,7 @@ int cmd_attach(int argc, char **argv)
             sb_free(dst);
             goto defer;
         }
-
+        tatrlog_append(TATRLOG_ATTACH, id, temp_sprintf("file=%s", base));
         if (renamed)
             log_info("Attached %s -> %s (renamed, conflict resolved)", base, dst.items);
         else

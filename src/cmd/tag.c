@@ -16,7 +16,6 @@ int cmd_tag(int argc, char **argv)
 
     if (!clag_parse(argc, argv)) {
         clag_print_error(stderr);
-        clag_print_options(stderr);
         return 1;
     }
 
@@ -37,7 +36,9 @@ int cmd_tag(int argc, char **argv)
 
     Tags owned = {0};
     String_Builder sb = {0};
+    String_Builder logtags = {0};
     sv_split_by_delim(iss.tags, ',', &owned);
+    bool first = true;
 
     for (size_t ti = 0; ti < tags->count; ti++) {
         const char *t = tags->items[ti];
@@ -55,15 +56,17 @@ int cmd_tag(int argc, char **argv)
                 goto defer;
             }
             da_remove_unordered(&owned, (size_t)found);
-            continue;
+        } else {
+            if (found >= 0) {
+                log_warn("Tag '%s' already present on issue %s", t, id);
+                goto defer;
+            }
+            da_append(&owned, sv_from_cstr(t));
         }
 
-        if (found >= 0) {
-            log_warn("Tag '%s' already present on issue %s", t, id);
-            goto defer;
-        }
-
-        da_append(&owned, sv_from_cstr(t));
+        if (!first) sb_append(&logtags, ',');
+        sb_append_cstr(&logtags, t);
+        first = false;
     }
 
     for (size_t i = 0; i < owned.count; i++) {
@@ -77,7 +80,9 @@ int cmd_tag(int argc, char **argv)
         log_error("Failed to save issue %s", id);
         goto defer;
     }
-
+    sb_append_null(&logtags);
+    if (logtags.count > 1)
+        tatrlog_append(TATRLOG_TAG, id, temp_sprintf("%s=%s", *remove ? "remove" : "add", logtags.items));
     log_info("Updated tags for issue %s", id);
     result = 0;
 

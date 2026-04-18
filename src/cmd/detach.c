@@ -7,7 +7,6 @@ int cmd_detach(int argc, char **argv)
 
     if (!clag_parse(argc, argv)) {
         clag_print_error(stderr);
-        clag_print_options(stderr);
         return 1;
     }
 
@@ -47,6 +46,8 @@ int cmd_detach(int argc, char **argv)
         log_error("Failed to remove attachment '%s'", filename);
         goto defer;
     }
+
+    tatrlog_append(TATRLOG_DETACH, id, temp_sprintf("file=%s", filename));
 
     log_info("Removed '%s' from issue %s", filename, id);
 

@@ -17,6 +17,8 @@ BUILD_DIR := build
 SRC := \
 	$(SRC_DIR)/main.c \
 	$(SRC_DIR)/issue.c \
+    $(SRC_DIR)/editor.c \
+    $(SRC_DIR)/tatrlog.c \
 	$(SRC_DIR)/ui.c
 
 EXPORT_SRC := $(wildcard $(CMD_DIR)/export/*.c)
@@ -37,6 +39,7 @@ CMD_SRC := \
 	$(CMD_DIR)/attachls.c \
 	$(CMD_DIR)/detach.c \
 	$(CMD_DIR)/tag.c \
+	$(CMD_DIR)/log.c \
 	$(CMD_DIR)/status.c
 
 LIB_SRC := \
