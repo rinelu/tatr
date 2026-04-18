@@ -20,7 +20,7 @@ int cmd_show(int argc, char **argv)
     const char *id = clag_rest_argv()[0];
 
     int result = 1;
-    size_t tmark = temp_save();
+    Temp_Checkpoint tmark = temp_save();
     Issue iss;
     if (!issue_load(id, &iss)) {
         log_error("tatr: issue '%s' not found", id);

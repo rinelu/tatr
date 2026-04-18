@@ -1,4 +1,5 @@
 #include "cmd.h"
+#include "temp.h"
 #include "export.h"
 #include <string.h>
 
@@ -56,7 +57,7 @@ int cmd_export(int argc, char **argv)
 
     if (clag_rest_argc() < 1) {
         log_error("missing issue ID");
-        log_msg("usage: tatr export <id> [--markdown] [--json] [--output <file>]");
+        log_msg("usage: tatr export <id> [--format=] [--output <file>]");
         return 1;
     }
 
@@ -64,7 +65,7 @@ int cmd_export(int argc, char **argv)
 
     const char *id = clag_rest_argv()[0];
 
-    size_t tmark = temp_save();
+    Temp_Checkpoint tmark = temp_save();
     int    result = 1;
     Issue  iss;
 

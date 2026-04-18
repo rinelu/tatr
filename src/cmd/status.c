@@ -126,7 +126,7 @@ int cmd_status(int argc, char **argv)
         return 1;
     }
 
-    size_t tmark = temp_save();
+    Temp_Checkpoint tmark = temp_save();
     Counts c = {0};
     Issues issues = {0};
     Tags tags = {0};

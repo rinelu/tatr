@@ -15,6 +15,20 @@ We follow https://semver.org/:
 
 # Changelogs
 
+## 1.5.0 (2026-04-16)
+
+- Add proper checkpoint system using `Temp_Checkpoint` (block + offset)
+- Add `temp_init()` and `temp_destroy()` lifecycle functions
+- Add `temp_alloc_aligned()` for explicit alignment control
+- Add alignment handling (`align_up`)
+- Implement linked-block arena with automatic growth
+- Replace fixed-size temporary buffer with dynamic arena allocator
+- Remove `TEMP_CAPACITY` limitation (no more hard cap / assert on large workloads)
+- Make `temp_alloc()` alignment-safe by default
+- Update all `tmark` to use `Temp_Checkpoint` instead of `size_t`
+- Ensure safe rewind behavior across multiple allocated blocks
+- Prevent undefined behavior from checkpoint packing
+
 ## 1.4.0 (2026-04-14)
 
 - Add automatic exporter source listing

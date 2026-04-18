@@ -20,7 +20,7 @@ int cmd_delete(int argc, char **argv)
 
     const char *id = clag_rest_argv()[0];
 
-    size_t tmark = temp_save();
+    Temp_Checkpoint tmark = temp_save();
     int result = 1;
     Issue iss;
     if (!issue_load(id, &iss)) {

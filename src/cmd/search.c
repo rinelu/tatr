@@ -31,7 +31,7 @@ int cmd_search(int argc, char **argv)
     if (!require_repo()) return 1;
 
     int result = 1;
-    size_t tmark = temp_save();
+    Temp_Checkpoint tmark = temp_save();
     Tokens tokens = {0};
     for (int i = 0; i < clag_rest_argc(); i++)
         da_append(&tokens, sv_from_cstr(clag_rest_argv()[i]));
