@@ -27,11 +27,16 @@ inline static void timestamp_id(char *buf, size_t bufsz)
     strftime(buf, bufsz, "%Y%m%d-%H%M%S", &tm);
 }
 
+inline static void get_timestamp(time_t t, char *buf, size_t sz)
+{
+    struct tm *tm = localtime(&t);
+    strftime(buf, sz, "%Y-%m-%dT%H:%M:%S", tm);
+}
+
 inline static void timestamp_iso(char *buf, size_t bufsz)
 {
     time_t t = time(NULL);
-    struct tm tm = *localtime(&t);
-    strftime(buf, bufsz, "%Y-%m-%dT%H:%M:%S", &tm);
+    get_timestamp(t, buf, bufsz);
 }
 
 inline static bool str_in(const char *s, const char *const *list)

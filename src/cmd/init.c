@@ -1,6 +1,4 @@
 #include "cmd.h"
-#include "fs.h"
-#include "global.h"
 
 int cmd_init(int argc, char **argv)
 {

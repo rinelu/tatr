@@ -24,7 +24,9 @@ int cmd_delete(int argc, char **argv)
         const char *id = clag_rest_argv()[i];
         Issue iss;
         if (!issue_load(id, &iss)) {
-            log_error("issue '%s' not found", id);
+            if (!*force) {
+                log_error("issue '%s' not found", id);
+            }
             result = 1;
             continue;
         }

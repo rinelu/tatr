@@ -1,56 +1,16 @@
 #include "cmd.h"
-
-static const char *event_color(TatrLog_Event e)
-{
-    switch (e) {
-    case TATRLOG_CREATE:  return A_BOLD_GREEN;
-    case TATRLOG_DELETE:  return A_BOLD_RED;
-    case TATRLOG_CLOSE:   return A_DIM;
-    case TATRLOG_REOPEN:  return A_BOLD_CYAN;
-    case TATRLOG_EDIT:    return A_BYELLOW;
-    case TATRLOG_TAG:     return A_CYAN;
-    case TATRLOG_COMMENT: return A_BLUE;
-    case TATRLOG_ATTACH:  return A_MAGENTA;
-    case TATRLOG_DETACH:  return A_MAGENTA;
-    default:              return "";
-    }
-}
-
-static void format_time_relative(time_t t, char *buf, size_t sz)
-{
-    time_t now  = time(NULL);
-    double diff = difftime(now, t);
-
-    if (diff < 60)
-        snprintf(buf, sz, "just now");
-    else if (diff < 3600)
-        snprintf(buf, sz, "%.0fm ago", diff / 60.0);
-    else if (diff < 86400)
-        snprintf(buf, sz, "%.0fh ago", diff / 3600.0);
-    else if (diff < 86400 * 30)
-        snprintf(buf, sz, "%.0fd ago", diff / 86400.0);
-    else {
-        struct tm *tm = localtime(&t);
-        strftime(buf, sz, "%Y-%m-%d", tm);
-    }
-}
-
-static void format_time_full(time_t t, char *buf, size_t sz)
-{
-    struct tm *tm = localtime(&t);
-    strftime(buf, sz, "%Y-%m-%dT%H:%M:%S", tm);
-}
+#include "util.h"
 
 static void print_entry_full(const TatrLog_Entry *e)
 {
     char time_rel[32];
     char time_full[32];
-    format_time_relative(e->time, time_rel, sizeof(time_rel));
-    format_time_full(e->time, time_full, sizeof(time_full));
+    ui_format_time_relative(e->time, time_rel, sizeof(time_rel));
+    get_timestamp(e->time, time_full, sizeof(time_full));
 
     // Header line: colored event + id
     printf("%s%-8s%s  %s"SV_Fmt"%s",
-           log_seq(event_color(e->event)),
+           log_seq(ui_event_color(e->event)),
            tatrlog_event_name(e->event),
            log_seq(A_RESET),
            log_seq(A_BYELLOW),
@@ -65,7 +25,7 @@ static void print_entry_full(const TatrLog_Entry *e)
            log_seq(A_RESET));
 
     if (e->detail.count > 0)
-        printf("         %s"SV_Fmt"%s\n",
+        log_msg("         %s"SV_Fmt"%s",
                log_seq(A_DIM),
                SV_Arg(e->detail),
                log_seq(A_RESET));
@@ -74,10 +34,10 @@ static void print_entry_full(const TatrLog_Entry *e)
 static void print_entry_oneline(const TatrLog_Entry *e)
 {
     char time_rel[32];
-    format_time_relative(e->time, time_rel, sizeof(time_rel));
+    ui_format_time_relative(e->time, time_rel, sizeof(time_rel));
 
     printf("%s%-8s%s  %s"SV_Fmt"%s  %s%s%s",
-           log_seq(event_color(e->event)),
+           log_seq(ui_event_color(e->event)),
            tatrlog_event_name(e->event),
            log_seq(A_RESET),
            log_seq(A_BYELLOW),
@@ -123,17 +83,13 @@ int cmd_log(int argc, char **argv)
     char    **since   = clag_str   ("since",   0,   NULL,  "Show entries after date (YYYY-MM-DD or ISO)");
     char    **until   = clag_str   ("until",   0,   NULL,  "Show entries before date (YYYY-MM-DD or ISO)");
     char    **id_flag = clag_str   ("id",      0,   NULL,  "Filter to a specific issue ID");
-    char    **event   = clag_str   ("event",   'e', NULL,  "Filter by event type (create|edit|close|...)");
-    bool     *oneline = clag_bool  ("oneline", 'l', false, "Compact single-line output");
-    bool     *reverse = clag_bool  ("reverse", 'r', false, "Show oldest entries first");
+    char    **event   = clag_str   ("event",   'e', NULL,  "Filter by event type");
+    bool     *oneline = clag_bool  ("oneline", 'l', NULL,  "Compact single-line output");
+    bool     *reverse = clag_bool  ("reverse", 'r', NULL,  "Show oldest entries first");
 
     clag_usage("[<id>] [options]");
-    clag_example("tatr log");
-    clag_example("tatr log -n 20");
-    clag_example("tatr log --event close");
-    clag_example("tatr log --since 2026-04-01 --until 2026-04-30");
-    clag_example("tatr log <issue-id>");
-    clag_example("tatr log <issue-id> --oneline");
+    clag_choices("event", "create", "edit", "close", "reopen", "delete",
+                          "tag", "comment", "attach", "detach");
 
     if (!clag_parse(argc, argv)) {
         clag_print_error(stderr);

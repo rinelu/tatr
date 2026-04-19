@@ -95,8 +95,12 @@ false_match:
             continue;
         }
 
-        ui_print_search_row(&iss);
-        issue_free(&iss);
+        log_msg("%s"SV_Fmt"%s  %s("SV_Fmt")%s  "SV_Fmt,
+            log_seq(A_BYELLOW), SV_Arg(iss.id), log_seq(A_RESET),
+            log_seq(ui_status_color(iss.status)),
+            SV_Arg(iss.status), log_seq(A_RESET),
+            SV_Arg(iss.title));
+            issue_free(&iss);
 
         found++;
         if (*limit > 0 && found >= *limit) break;

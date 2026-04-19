@@ -1,5 +1,10 @@
 #include "cmd.h"
 
+#define COL_ID        24
+#define COL_STATUS    8
+#define COL_PRIORITY  10
+#define COL_GAP       2
+
 typedef struct {
     const char *status;
     const char *priority;
@@ -72,8 +77,22 @@ int cmd_list(int argc, char **argv)
     }
 
     da_sort(&ids, cmp_paths);
+    int tw = term_width();
+    int indent = COL_ID + COL_STATUS + COL_PRIORITY + 2 * COL_GAP;
+    int max_title = tw - indent;
+    if (tw < 70) {
+        log_error("Terminal window is too small.");
+        goto defer;
+    }
 
-    if (opt.show_header) ui_print_list_header();
+    if (opt.show_header)
+        log_msg("%s%-*s  %-*s  %-*s  %s%s",
+            log_seq(A_BOLD_WHITE),
+            COL_ID, "ID",
+            COL_STATUS, "STATUS",
+            COL_PRIORITY, "PRIORITY",
+            "TITLE",
+            log_seq(A_RESET));
 
     uint64_t shown = 0;
     for (size_t i = 0; i < ids.count; i++) {
@@ -85,7 +104,19 @@ int cmd_list(int argc, char **argv)
             continue;
         }
 
-        ui_print_issue_row(&iss);
+        if (max_title < 8) max_title = 8;
+        if (max_title > 255) max_title = 255;
+
+        printf("%s%-*.*s%s  ",
+            log_seq(A_BYELLOW), COL_ID, SV_Arg(iss.id), log_seq(A_RESET));
+
+        printf("%s%-*.*s%s  ",
+            log_seq(ui_status_color(iss.status)), COL_STATUS, SV_Arg(iss.status), log_seq(A_RESET));
+
+        printf("%s%-*.*s%s  ",
+            log_seq(ui_priority_color(iss.priority)), COL_PRIORITY, SV_Arg(iss.priority), log_seq(A_RESET));
+
+        ui_wrap(stdout, temp_sv_to_cstr(iss.title), indent, indent+2, tw);
         issue_free(&iss);
 
         shown++;

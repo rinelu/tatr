@@ -14,9 +14,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#ifdef FS_SILENT
 #define printf(...) ((void)0)
-#endif
 
 #ifdef _WIN32
 #define FS_SEP "\\"

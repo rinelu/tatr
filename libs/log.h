@@ -28,11 +28,6 @@
      // console gets colour, file gets plain text
      log_init(.file = f);
    ```
-  
-   Macro Interface
-     LOG_NO_COLOR      — strip all ANSI sequences at compile time
-     LOG_GLOBAL        — share log__g across TUs (see above)
-     LOG_IMPL_GLOBAL   — provide the definition of log__g (one TU only)
  */
 
 #ifndef LOG_H_
@@ -162,14 +157,10 @@ typedef struct {
 
 } Log_Global;
 
-#ifndef LOG_GLOBAL
-static Log_Global log__g = {0};
-#else
-#  ifdef LOG_IMPLEMENTATION
+#ifdef LOG_IMPLEMENTATION
 Log_Global log__g = {0};
-#  else
+#else
 extern Log_Global log__g;
-#  endif
 #endif
 
 #define log_init(...) log__init((Log_Config){__VA_ARGS__})

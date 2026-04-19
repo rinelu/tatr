@@ -1,5 +1,48 @@
 #include "cmd.h"
 
+static void show_issue_full(const Issue *iss)
+{
+    log_msg("%sissue %s"SV_Fmt"%s", log_seq(A_BYELLOW), log_seq(A_BOLD), SV_Arg(iss->id), log_seq(A_RESET));
+
+#define LABEL(s) printf("%s%-10s%s", log_seq(A_BOLD_WHITE), (s), log_seq(A_RESET))
+
+    LABEL("Author:");
+    log_msg("  "SV_Fmt, SV_Arg(iss->created));
+
+    LABEL("Status:");
+    log_msg("  %s"SV_Fmt"%s",
+        log_seq(ui_status_color(iss->status)), SV_Arg(iss->status), log_seq(A_RESET));
+
+    LABEL("Priority:");
+    log_msg("  %s"SV_Fmt"%s", log_seq(ui_priority_color(iss->priority)), SV_Arg(iss->priority), log_seq(A_RESET));
+
+    if (iss->tags.count)
+        LABEL("Tags:"),
+        log_msg("  %s"SV_Fmt"%s", log_seq(A_CYAN), SV_Arg(iss->tags), log_seq(A_RESET));
+
+#undef LABEL
+
+    log_msg("\n    %s%.*s%s", log_seq(A_BOLD), SV_Arg(iss->title), log_seq(A_RESET));
+
+    if (iss->body.count) {
+        String_View cursor = iss->body, line;
+
+        while (cursor.count > 0) {
+            line = sv_slice_by_delim(&cursor, '\n');
+
+            String_View trimmed = sv_trim(line);
+            if (sv_eq(trimmed, sv_from_cstr("---comment---"))) {
+                print_rule();
+                continue;
+            }
+
+            log_msg("    "SV_Fmt, SV_Arg(line));
+        }
+    }
+
+    fputc('\n', stdout);
+}
+
 int cmd_show(int argc, char **argv)
 {
     bool *raw_flag = clag_bool("raw", 'r', false, "Print raw issue.tatr without decoration");
@@ -33,7 +76,7 @@ int cmd_show(int argc, char **argv)
         goto defer;
     }
 
-    ui_print_issue_full(&iss);
+    show_issue_full(&iss);
 
     File_Paths files = {0};
     if (fs_read_dir(iss.attach_path, &files)) {

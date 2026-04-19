@@ -1,6 +1,6 @@
 #include "editor.h"
 #include "fs.h"
-#include "ui.h"
+#include "log.h"
 
 #include <stdio.h>
 #include <stdlib.h>

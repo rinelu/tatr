@@ -1,5 +1,6 @@
 #include "cmd.h"
 #include "temp.h"
+#include "ui.h"
 
 typedef struct {
     size_t total;
@@ -192,6 +193,8 @@ int cmd_status(int argc, char **argv)
     da_foreach(IssueInfo, iss, &issues) {
         if (ii_is_closed(iss)) continue;
         double days = difftime(now, parse_iso(iss->updated)) / 86400.0;
+        char time_rel[32];
+        ui_format_time_relative(parse_iso(iss->updated), time_rel, sizeof(time_rel));
         if (days < (double)*stale_days)
             continue;
 
@@ -200,10 +203,10 @@ int cmd_status(int argc, char **argv)
                     A_BOLD_YELLOW, A_RESET, A_DIM, *stale_days, A_RESET);
             has_stale = true;
         }
-        log_msg("  %s%s%s  "SV_Fmt"  %s(%.0fd)%s", 
+        log_msg("  %s%s%s  "SV_Fmt"  %s(%s)%s", 
                 A_YELLOW, iss->id, A_RESET,
                 SV_Arg(iss->title), 
-                A_DIM, days, A_RESET);
+                A_DIM, time_rel, A_RESET);
     }
     if (!has_stale) log_msg("\n%sStale:%s %s(none)%s", A_BOLD, A_RESET, A_DIM, A_RESET);
 
@@ -213,17 +216,12 @@ int cmd_status(int argc, char **argv)
     } else {
         for (size_t i = 0; i < issues.count && i < *limit; i++) {
             IssueInfo *iss = &issues.items[i];
-            double days = difftime(now, parse_iso(iss->updated)) / 86400.0;
-            if (days < 1.0)
-                log_msg("  %s%s%s  "SV_Fmt"  %stoday%s",
-                       A_DIM, iss->id, A_RESET,
-                       SV_Arg(iss->title),
-                       A_GREEN, A_RESET);
-            else
-                log_msg("  %s%s%s  "SV_Fmt"  %s%.0fd%s",
-                       A_DIM, iss->id, A_RESET,
-                       SV_Arg(iss->title),
-                       A_DIM, days, A_RESET);
+            char time_rel[32];
+            ui_format_time_relative(parse_iso(iss->updated), time_rel, sizeof(time_rel));
+            log_msg("  %s%s%s  "SV_Fmt"  %s%s%s",
+                   A_DIM, iss->id, A_RESET,
+                   SV_Arg(iss->title),
+                   A_DIM, time_rel, A_RESET);
         }
     }
 

@@ -10,8 +10,9 @@
 #include "global.h"
 #include "clag.h"
 #include "issue.h"
-#include "ui.h"
 #include "temp.h"
+#include "ui.h"
+#include "log.h"
 #include "tatrlog.h"
 
 inline static bool require_repo(void)

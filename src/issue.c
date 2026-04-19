@@ -1,7 +1,8 @@
 #include "issue.h"
 #include "astring.h"
+
 #include "fs.h"
-#include "ui.h"
+#include "log.h"
 
 #include <stdio.h>
 #include <stdlib.h>

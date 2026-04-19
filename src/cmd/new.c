@@ -106,6 +106,8 @@ int cmd_new(int argc, char **argv)
     bool     *interactive = clag_bool("interactive", 'i', false,    "Interactive mode");
 
     clag_usage("[options]");
+    clag_choices("status", "open", "closed", "wontfix", "in-progress");
+    clag_choices("priority", "low", "normal", "high", "critical");
     
     if (!clag_parse(argc, argv)) {
         clag_print_error(stderr);

@@ -1,7 +1,7 @@
 #include "ui.h"
+#include "log.h"
 
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
 
 #if defined(_WIN32) || defined(_WIN64)
@@ -11,17 +11,7 @@
 #  include <sys/ioctl.h>
 #endif
 
-static struct {
-    bool show_header;
-} g = {0};
-
-void ui__init(UIConfig cfg)
-{
-    log_init(.use_color=false);
-    g.show_header = cfg.show_header;
-}
-
-static int term_width(void)
+int term_width(void)
 {
 #if defined(_WIN32)
     CONSOLE_SCREEN_BUFFER_INFO csbi;
@@ -60,72 +50,42 @@ const char *ui_priority_color(String_View p)
     return "";
 }
 
-static void sv_to_buf(String_View in, char *out, size_t outsz)
+const char *ui_event_color(TatrLog_Event e)
 {
-    if (outsz == 0) return;
-
-    if (in.count < outsz) {
-        memcpy(out, in.data, in.count);
-        out[in.count] = '\0';
-        return;
+    switch (e) {
+    case TATRLOG_CREATE:  return A_BOLD_GREEN;
+    case TATRLOG_DELETE:  return A_BOLD_RED;
+    case TATRLOG_CLOSE:   return A_DIM;
+    case TATRLOG_REOPEN:  return A_BOLD_CYAN;
+    case TATRLOG_EDIT:    return A_BYELLOW;
+    case TATRLOG_TAG:     return A_CYAN;
+    case TATRLOG_COMMENT: return A_BLUE;
+    case TATRLOG_ATTACH:  return A_MAGENTA;
+    case TATRLOG_DETACH:  return A_MAGENTA;
+    default:              return "";
     }
-
-    size_t clip = outsz - 4;
-    memcpy(out, in.data, clip);
-    memcpy(out + clip, "\xe2\x80\xa6", 4);
 }
 
-#define COL_ID        24
-#define COL_STATUS    13
-#define COL_PRIORITY  10
-#define COL_GAP       2
-
-void ui_print_list_header(void)
+void ui_format_time_relative(time_t t, char *buf, size_t sz)
 {
-    if (!g.show_header) return;
+    time_t now  = time(NULL);
+    double diff = difftime(now, t);
 
-    log_msg("%s%-*s  %-*s  %-*s  %s%s",
-        log_seq(A_BOLD_WHITE),
-        COL_ID, "ID",
-        COL_STATUS, "STATUS",
-        COL_PRIORITY, "PRIORITY",
-        "TITLE",
-        log_seq(A_RESET));
+    if (diff < 60)
+        snprintf(buf, sz, "just now");
+    else if (diff < 3600)
+        snprintf(buf, sz, "%.0fm ago", diff / 60.0);
+    else if (diff < 86400)
+        snprintf(buf, sz, "%.0fh ago", diff / 3600.0);
+    else if (diff < 86400 * 30)
+        snprintf(buf, sz, "%.0fd ago", diff / 86400.0);
+    else {
+        struct tm *tm = localtime(&t);
+        strftime(buf, sz, "%Y-%m-%d", tm);
+    }
 }
 
-void ui_print_issue_row(const Issue *iss)
-{
-    int tw = term_width();
-    int max_title = tw - (COL_ID + COL_STATUS + COL_PRIORITY + 2 * COL_GAP);
-
-    if (max_title < 8) max_title = 8;
-    if (max_title > 255) max_title = 255;
-
-    char title[256];
-    sv_to_buf(iss->title, title, (size_t)max_title + 1);
-
-    printf("%s%-*.*s%s  ",
-        log_seq(A_BYELLOW), COL_ID, SV_Arg(iss->id), log_seq(A_RESET));
-
-    printf("%s%-*.*s%s  ",
-        log_seq(ui_status_color(iss->status)), COL_STATUS, SV_Arg(iss->status), log_seq(A_RESET));
-
-    printf("%s%-*.*s%s  ",
-        log_seq(ui_priority_color(iss->priority)), COL_PRIORITY, SV_Arg(iss->priority), log_seq(A_RESET));
-
-    log_msg("%s", title);
-}
-
-void ui_print_search_row(const Issue *iss)
-{
-    log_msg("%s"SV_Fmt"%s  %s("SV_Fmt")%s  "SV_Fmt,
-        log_seq(A_BYELLOW), SV_Arg(iss->id), log_seq(A_RESET),
-        log_seq(ui_status_color(iss->status)),
-        SV_Arg(iss->status), log_seq(A_RESET),
-        SV_Arg(iss->title));
-}
-
-static void print_rule(void)
+void print_rule(void)
 {
     int w = term_width();
     if (w > 120) w = 120;
@@ -137,45 +97,37 @@ static void print_rule(void)
     fputc('\n', stdout);
 }
 
-void ui_print_issue_full(const Issue *iss)
+void ui_wrap(FILE *s, const char *text, int indent_first, int indent_rest, int width)
 {
-    log_msg("%sissue %s"SV_Fmt"%s", log_seq(A_BYELLOW), log_seq(A_BOLD), SV_Arg(iss->id), log_seq(A_RESET));
+    const char *p = text;
+    int line = 0;
 
-#define LABEL(s) printf("%s%-10s%s", log_seq(A_BOLD_WHITE), (s), log_seq(A_RESET))
-
-    LABEL("Author:");
-    log_msg("  "SV_Fmt, SV_Arg(iss->created));
-
-    LABEL("Status:");
-    log_msg("  %s"SV_Fmt"%s",
-        log_seq(ui_status_color(iss->status)), SV_Arg(iss->status), log_seq(A_RESET));
-
-    LABEL("Priority:");
-    log_msg("  %s"SV_Fmt"%s", log_seq(ui_priority_color(iss->priority)), SV_Arg(iss->priority), log_seq(A_RESET));
-
-    if (iss->tags.count)
-        LABEL("Tags:"),
-        log_msg("  %s"SV_Fmt"%s", log_seq(A_CYAN), SV_Arg(iss->tags), log_seq(A_RESET));
-
-#undef LABEL
-
-    log_msg("\n    %s%.*s%s", log_seq(A_BOLD), (int)iss->title.count, iss->title.data, log_seq(A_RESET));
-
-    if (iss->body.count) {
-        String_View cursor = iss->body, line;
-
-        while (cursor.count > 0) {
-            line = sv_slice_by_delim(&cursor, '\n');
-
-            String_View trimmed = sv_trim(line);
-            if (sv_eq(trimmed, sv_from_cstr("---comment---"))) {
-                print_rule();
-                continue;
-            }
-
-            log_msg("    "SV_Fmt, SV_Arg(line));
+    while (*p) {
+        if (line != 0) {
+            fprintf(s, "%*s", indent_rest, "");
         }
-    }
+        // Word-wrap one line worth of text
+        int avail = width - (line == 0 ? indent_first : indent_rest);
+        if (avail < 1) avail = 1;
 
-    fputc('\n', stdout);
+        int i = 0;
+        int last_space = -1;
+        while (p[i] && p[i] != '\n' && i < avail) {
+            if (p[i] == ' ') last_space = i;
+            i++;
+        }
+
+        int cut = i;
+        if (p[i] && p[i] != '\n' && last_space > 0)
+            cut = last_space;
+
+        fwrite(p, 1, (size_t)cut, s);
+        fputc('\n', s);
+
+        p += cut;
+        while (*p == ' ') p++;
+        if (*p == '\n') p++;
+
+        line++;
+    }
 }
