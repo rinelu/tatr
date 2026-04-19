@@ -1,4 +1,5 @@
 #include "export.h"
+#include "issue.h"
 
 static void json_escape(FILE *out, String_View sv)
 {
@@ -172,31 +173,54 @@ void export_json(const Issue *iss, FILE *out, const Export_Opts *opts)
     fmt.indent++;
 
     json_key(out, fmt, "id");
-    fprintf(out, "\""); json_escape(out, iss->id); fprintf(out, "\","); json_nl(out, fmt);
+    fprintf(out, "\"");
+    json_escape(out, iss->id);
+    fprintf(out, "\",");
+    json_nl(out, fmt);
 
     json_key(out, fmt, "title");
-    fprintf(out, "\""); json_escape(out, iss->title); fprintf(out, "\","); json_nl(out, fmt);
+    fprintf(out, "\"");
+    json_escape(out, iss->title);
+    fprintf(out, "\",");
+    json_nl(out, fmt);
 
     json_key(out, fmt, "status");
-    fprintf(out, "\""); json_escape(out, iss->status); fprintf(out, "\","); json_nl(out, fmt);
+    fprintf(out, "\"");
+    json_escape(out, issue_status_to_sv(iss->status));
+    fprintf(out, "\",");
+    json_nl(out, fmt);
 
     json_key(out, fmt, "priority");
-    fprintf(out, "\""); json_escape(out, iss->priority); fprintf(out, "\","); json_nl(out, fmt);
+    fprintf(out, "\"");
+    json_escape(out, issue_priority_to_sv(iss->priority));
+    fprintf(out, "\",");
+    json_nl(out, fmt);
 
     json_key(out, fmt, "tags");
-    json_write_tags(out, iss->tags); fprintf(out, ","); json_nl(out, fmt);
+    json_write_tags(out, iss->tags);
+    fprintf(out, ",");
+    json_nl(out, fmt);
 
     json_key(out, fmt, "created");
-    fprintf(out, "\""); json_escape(out, iss->created); fprintf(out, "\","); json_nl(out, fmt);
+    fprintf(out, "\"");
+    json_escape(out, iss->created);
+    fprintf(out, "\",");
+    json_nl(out, fmt);
 
     json_key(out, fmt, "body");
-    fprintf(out, "\""); json_escape(out, iss->body); fprintf(out, "\","); json_nl(out, fmt);
+    fprintf(out, "\"");
+    json_escape(out, iss->body);
+    fprintf(out, "\",");
+    json_nl(out, fmt);
 
     json_key(out, fmt, "comments");
-    json_write_comments(out, iss->body); fprintf(out, ","); json_nl(out, fmt);
+    json_write_comments(out, iss->body);
+    fprintf(out, ",");
+    json_nl(out, fmt);
 
     json_key(out, fmt, "attachments");
-    json_write_attachments(out, iss->attach_path); json_nl(out, fmt);
+    json_write_attachments(out, iss->attach_path);
+    json_nl(out, fmt);
 
     fmt.indent--;
     json_indent(out, fmt);

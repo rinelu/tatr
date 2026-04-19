@@ -101,7 +101,7 @@ static void test_reopen_appears_in_list(void)
 static void test_delete_removes_directory(void)
 {
     char args[128];
-    snprintf(args, sizeof(args), "delete %s --yes", issue_a);
+    snprintf(args, sizeof(args), "delete %s", issue_a);
     TatrResult r = tatr(args);
     ASSERT_CMD_OK(r);
 
@@ -112,21 +112,21 @@ static void test_delete_removes_directory(void)
 
 static void test_delete_unknown_id_fails(void)
 {
-    TatrResult r = tatr("delete ghost_issue --yes");
+    TatrResult r = tatr("delete ghost_issue");
     ASSERT_CMD_FAIL(r);
     ASSERT_OUT_CONTAINS(r, "not found");
 }
 
 static void test_delete_missing_id_fails(void)
 {
-    TatrResult r = tatr("delete --yes");
+    TatrResult r = tatr("delete");
     ASSERT_CMD_FAIL(r);
 }
 
 static void test_delete_not_in_list_after_delete(void)
 {
     char args[128];
-    snprintf(args, sizeof(args), "delete %s --yes", issue_a);
+    snprintf(args, sizeof(args), "delete %s", issue_a);
     tatr(args);
 
     TatrResult r = tatr("list --all");

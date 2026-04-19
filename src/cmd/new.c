@@ -147,8 +147,8 @@ int cmd_new(int argc, char **argv)
     }
 
     if (*title)    iss.title    = sv_from_cstr(*title);
-    if (*status)   iss.status   = sv_from_cstr(*status);
-    if (*priority) iss.priority = sv_from_cstr(*priority);
+    if (*status)   iss.status   = issue_status_from_cstr(*status);
+    if (*priority) iss.priority = issue_priority_from_cstr(*priority);
 
     String_Builder tags_sb = {0};
     for (size_t i = 0; i < tags->count; i++) {
@@ -176,8 +176,8 @@ int cmd_new(int argc, char **argv)
 
     String_Builder raw = {0};
     sb_appendf(&raw, "title: %s\n", iss.title.data ? iss.title.data : "");
-    sb_appendf(&raw, "status: %s\n", iss.status.data ? iss.status.data : "open");
-    sb_appendf(&raw, "priority: %s\n", iss.priority.data ? iss.priority.data : "normal");
+    sb_appendf(&raw, "status: %s\n", issue_status_to_cstr(iss.status));
+    sb_appendf(&raw, "priority: %s\n", issue_priority_to_cstr(iss.priority));
     sb_appendf(&raw, "created: %s\n", ts);
     sb_appendf(&raw, "tags: %s\n", tags_sb.items);
     sb_append_cstr(&raw, "---\n");

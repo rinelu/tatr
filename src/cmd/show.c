@@ -10,11 +10,16 @@ static void show_issue_full(const Issue *iss)
     log_msg("  "SV_Fmt, SV_Arg(iss->created));
 
     LABEL("Status:");
-    log_msg("  %s"SV_Fmt"%s",
-        log_seq(ui_status_color(iss->status)), SV_Arg(iss->status), log_seq(A_RESET));
+    log_msg("  %s%s%s",
+        log_seq(ui_status_color(iss->status)),
+        issue_status_to_cstr(iss->status),
+        log_seq(A_RESET));
 
     LABEL("Priority:");
-    log_msg("  %s"SV_Fmt"%s", log_seq(ui_priority_color(iss->priority)), SV_Arg(iss->priority), log_seq(A_RESET));
+    log_msg("  %s%s%s",
+            log_seq(ui_priority_color(iss->priority)),
+            issue_priority_to_cstr(iss->priority),
+            log_seq(A_RESET));
 
     if (iss->tags.count)
         LABEL("Tags:"),

@@ -64,10 +64,10 @@ int cmd_search(int argc, char **argv)
                     if (!sv_has(iss.tags, value.data, ','))
                         goto false_match;
                 } else if (sv_eq_cstr(key, "status")) {
-                    if (!match_token(iss.status, value, *case_flag))
+                    if (!match_token(issue_status_to_sv(iss.status), value, *case_flag))
                         goto false_match;
                 } else if (sv_eq_cstr(key, "priority")) {
-                    if (!match_token(iss.priority, value, *case_flag))
+                    if (!match_token(issue_priority_to_sv(iss.priority), value, *case_flag))
                         goto false_match;
                 } else if (sv_eq_cstr(key, "title")) {
                     if (!match_token(iss.title, value, *case_flag))
@@ -95,10 +95,10 @@ false_match:
             continue;
         }
 
-        log_msg("%s"SV_Fmt"%s  %s("SV_Fmt")%s  "SV_Fmt,
+        log_msg("%s"SV_Fmt"%s  %s(%s)%s  "SV_Fmt,
             log_seq(A_BYELLOW), SV_Arg(iss.id), log_seq(A_RESET),
             log_seq(ui_status_color(iss.status)),
-            SV_Arg(iss.status), log_seq(A_RESET),
+            issue_status_to_cstr(iss.status), log_seq(A_RESET),
             SV_Arg(iss.title));
             issue_free(&iss);
 

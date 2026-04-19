@@ -1,4 +1,5 @@
 #include "ui.h"
+#include "issue.h"
 #include "log.h"
 
 #include <stdio.h>
@@ -32,22 +33,25 @@ int term_width(void)
     return 80;
 }
 
-const char *ui_status_color(String_View status)
+const char *ui_status_color(Issue_StatusKind status)
 {
-    if (sv_eq(status, sv_from_cstr("open")))        return A_BOLD_GREEN;
-    if (sv_eq(status, sv_from_cstr("closed")))      return A_CYAN;
-    if (sv_eq(status, sv_from_cstr("wontfix")))     return A_DIM;
-    if (sv_eq(status, sv_from_cstr("in-progress"))) return A_BYELLOW;
-    return "";
+    switch (status) {
+        case ISSUE_SOPEN:     return A_BOLD_GREEN;
+        case ISSUE_SCLOSED:   return A_CYAN;
+        case ISSUE_SWONTFIX:  return A_DIM;
+        case ISSUE_SONGOING:  return A_BYELLOW;
+        default: return "";
+    }
 }
-
-const char *ui_priority_color(String_View p)
+const char *ui_priority_color(Issue_PriorityKind p)
 {
-    if (sv_eq(p, sv_from_cstr("critical"))) return A_BOLD_BRED;
-    if (sv_eq(p, sv_from_cstr("high")))     return A_RED;
-    if (sv_eq(p, sv_from_cstr("normal")))   return A_YELLOW;
-    if (sv_eq(p, sv_from_cstr("low")))      return A_DIM_WHITE;
-    return "";
+    switch (p) {
+        case ISSUE_PCRITICAL: return A_BOLD_BRED;
+        case ISSUE_PHIGH:     return A_RED;
+        case ISSUE_PNORMAL:   return A_YELLOW;
+        case ISSUE_PLOW:      return A_DIM_WHITE;
+        default: return "";
+    }
 }
 
 const char *ui_event_color(TatrLog_Event e)

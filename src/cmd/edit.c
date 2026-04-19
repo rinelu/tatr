@@ -1,12 +1,15 @@
 #include "cmd.h"
 #include "editor.h"
+#include "issue.h"
 #include "temp.h"
 
 static String_View get_field(const Issue *iss, const char *field)
 {
     if (strcmp(field, "title")    == 0) return iss->title;
-    if (strcmp(field, "status")   == 0) return iss->status;
-    if (strcmp(field, "priority") == 0) return iss->priority;
+    if (strcmp(field, "status")   == 0)
+        return sv_from_cstr(issue_status_to_cstr(iss->status));
+    if (strcmp(field, "priority") == 0)
+        return sv_from_cstr(issue_priority_to_cstr(iss->priority));
     if (strcmp(field, "tags")     == 0) return iss->tags;
     if (strcmp(field, "body")     == 0) return iss->body;
     return sv_from_parts(NULL, 0);

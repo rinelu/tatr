@@ -1,4 +1,5 @@
 #include "cmd.h"
+#include "issue.h"
 #include "temp.h"
 #include "ui.h"
 
@@ -12,8 +13,8 @@ typedef struct {
 typedef struct {
     const char *id;
     String_View title;
-    String_View status;
-    String_View priority;
+    Issue_StatusKind status;
+    Issue_PriorityKind priority;
     String_View tags;
     String_View created;
     String_View updated;
@@ -24,6 +25,12 @@ typedef struct {
     size_t count;
     size_t capacity;
 } Issues;
+
+static bool ii_is_closed(const IssueInfo *iss)
+{
+    return iss->status == ISSUE_SCLOSED ||
+           iss->status == ISSUE_SWONTFIX;
+}
 
 // extract latest comment date if exists
 static String_View issue_last_updated(const Issue *iss)
@@ -42,11 +49,6 @@ static String_View issue_last_updated(const Issue *iss)
     }
 
     return last;
-}
-
-static bool ii_is_closed(const IssueInfo *iss)
-{
-    return sv_eq_cstr(iss->status, "closed") || sv_eq_cstr(iss->status, "wontfix");
 }
 
 #define parse_iso(x) parse_time_n(x.data, x.count)
@@ -121,16 +123,16 @@ int cmd_status(int argc, char **argv)
 
         c.total++;
 
-        if (sv_eq_cstr(iss.status, "open")) c.open++;
-        else if (sv_eq_cstr(iss.status, "in-progress")) c.in_progress++;
+        if (iss.status == ISSUE_SOPEN) c.open++;
+        else if (iss.status == ISSUE_SONGOING) c.in_progress++;
         else if (issue_is_closed(&iss)) c.closed++;
 
 #define TV(sv) sv_from_parts(temp_strndup((sv).data, (sv).count), (sv).count)
         IssueInfo info = {
             .id       = temp_strdup(ids.items[i]),
             .title    = TV(iss.title),
-            .status   = TV(iss.status),
-            .priority = TV(iss.priority),
+            .status   = iss.status,
+            .priority = iss.priority,
             .tags     = TV(iss.tags),
             .created  = TV(iss.created),
             .updated  = TV(issue_last_updated(&iss)),
@@ -175,8 +177,8 @@ int cmd_status(int argc, char **argv)
     bool has_high = false;
     da_foreach(IssueInfo, iss, &issues) {
         if (ii_is_closed(iss)) continue;
-        bool is_crit = sv_eq_cstr(iss->priority, "critical");
-        if (!is_crit && !sv_eq_cstr(iss->priority, "high"))
+        bool is_crit = iss->priority == ISSUE_PCRITICAL;
+        if (!is_crit && iss->priority != ISSUE_PHIGH)
             continue;
         if (!has_high) { 
             log_msg("\n%sHigh priority:%s", A_BOLD_RED, A_RESET);

@@ -109,14 +109,14 @@ static void test_new_invalid_priority_rejected(void)
 {
     TatrResult r = tatr("new --title 'bad' --priority ultra");
     ASSERT_CMD_FAIL(r);
-    ASSERT_OUT_CONTAINS(r, "Invalid priority");
+    ASSERT_OUT_CONTAINS(r, "invalid value");
 }
 
 static void test_new_invalid_status_rejected(void)
 {
     TatrResult r = tatr("new --title 'bad' --status limbo");
     ASSERT_CMD_FAIL(r);
-    ASSERT_OUT_CONTAINS(r, "Invalid status");
+    ASSERT_OUT_CONTAINS(r, "invalid value");
 }
 
 static void test_new_with_body(void)

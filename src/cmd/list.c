@@ -1,4 +1,5 @@
 #include "cmd.h"
+#include "issue.h"
 
 #define COL_ID        24
 #define COL_STATUS    8
@@ -6,8 +7,8 @@
 #define COL_GAP       2
 
 typedef struct {
-    const char *status;
-    const char *priority;
+    Issue_StatusKind status;
+    Issue_PriorityKind priority;
     const char *tag;
     bool include_closed;
 } IssueFilter;
@@ -17,10 +18,10 @@ static bool list__match(const Issue *iss, const IssueFilter *f)
     if (!f->include_closed && issue_is_closed(iss))
         return false;
 
-    if (f->status && !sv_eq(iss->status, sv_from_cstr(f->status)))
+    if (f->status != ISSUE_SINVALID && iss->status != f->status)
         return false;
 
-    if (f->priority && !sv_eq(iss->priority, sv_from_cstr(f->priority)))
+    if (f->priority != ISSUE_PINVALID && iss->priority != f->priority)
         return false;
 
     if (f->tag && !issue_has_tag(iss, f->tag))
@@ -37,8 +38,8 @@ typedef struct {
 
 static bool list__parse_opts(int argc, char **argv, ListOptions *opt)
 {
-    char    **status   = clag_str ("status",   's', NULL,  "Filter by status");
-    char    **priority = clag_str ("priority", 'p', NULL,  "Filter by priority");
+    char    **status   = clag_str ("status",   's', "",    "Filter by status");
+    char    **priority = clag_str ("priority", 'p', "",    "Filter by priority");
     char    **tag      = clag_str ("tag",      'T', NULL,  "Filter by tag");
     bool     *all      = clag_bool("all",      'a', false, "Include closed issues");
     bool     *nohdr    = clag_bool("no-header",'q', false, "Suppress column header");
@@ -51,8 +52,8 @@ static bool list__parse_opts(int argc, char **argv, ListOptions *opt)
         return false;
     }
 
-    opt->filter.status         = *status;
-    opt->filter.priority       = *priority;
+    opt->filter.status         = issue_status_from_cstr(*status);
+    opt->filter.priority       = issue_priority_from_cstr(*priority);
     opt->filter.tag            = *tag;
     opt->filter.include_closed = *all;
 
@@ -110,11 +111,13 @@ int cmd_list(int argc, char **argv)
         printf("%s%-*.*s%s  ",
             log_seq(A_BYELLOW), COL_ID, SV_Arg(iss.id), log_seq(A_RESET));
 
-        printf("%s%-*.*s%s  ",
-            log_seq(ui_status_color(iss.status)), COL_STATUS, SV_Arg(iss.status), log_seq(A_RESET));
+        printf("%s%-*s%s  ",
+            log_seq(ui_status_color(iss.status)), COL_STATUS,
+            issue_status_to_cstr(iss.status), log_seq(A_RESET));
 
-        printf("%s%-*.*s%s  ",
-            log_seq(ui_priority_color(iss.priority)), COL_PRIORITY, SV_Arg(iss.priority), log_seq(A_RESET));
+        printf("%s%-*s%s  ",
+            log_seq(ui_priority_color(iss.priority)), COL_PRIORITY,
+            issue_priority_to_cstr(iss.priority), log_seq(A_RESET));
 
         ui_wrap(stdout, temp_sv_to_cstr(iss.title), indent, indent+2, tw);
         issue_free(&iss);

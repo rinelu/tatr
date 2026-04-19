@@ -11,8 +11,8 @@ void export_markdown(const Issue *iss, FILE *out, const Export_Opts *opts)
     fprintf(out, "| Field    | Value |\n");
     fprintf(out, "|----------|-------|\n");
     fprintf(out, "| **ID**       | `"SV_Fmt"` |\n", SV_Arg(iss->id));
-    fprintf(out, "| **Status**   | "SV_Fmt" |\n",   SV_Arg(iss->status));
-    fprintf(out, "| **Priority** | "SV_Fmt" |\n",   SV_Arg(iss->priority));
+    fprintf(out, "| **Status**   | %s |\n",         issue_status_to_cstr(iss->status));
+    fprintf(out, "| **Priority** | %s |\n",         issue_priority_to_cstr(iss->priority));
     fprintf(out, "| **Tags**     | "SV_Fmt" |\n",   SV_Arg(iss->tags));
     fprintf(out, "| **Created**  | "SV_Fmt" |\n",   SV_Arg(iss->created));
 
@@ -45,8 +45,7 @@ void export_markdown(const Issue *iss, FILE *out, const Export_Opts *opts)
                 String_View key  = sv_trim(sv_slice_by_delim(&rest, ':'));
 
                 if (sv_eq_cstr(key, "date") || sv_eq_cstr(key, "author")) {
-                    fprintf(out, "**"SV_Fmt":** "SV_Fmt"\n",
-                            SV_Arg(key), SV_Arg(sv_trim(rest)));
+                    fprintf(out, "**"SV_Fmt":** "SV_Fmt"\n", SV_Arg(key), SV_Arg(sv_trim(rest)));
                     continue;
                 }
 
