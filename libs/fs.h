@@ -26,6 +26,7 @@ const char *fs__path(const char *first, ...);
 #define fs_path(...) fs__path(__VA_ARGS__, NULL)
 
 const char *fs_path_name(const char *path);
+const char *fs_file_extension(const char *path);
 bool fs_file_exists(const char *file_path);
 bool fs_unique_path(const char *dir, const char *filename, String_Builder *out);
 bool fs_rename(const char *old_path, const char *new_path);

@@ -30,6 +30,8 @@ set(TATR_SRC
     src/ui.c
     src/editor.c
     src/tatrlog.c
+    src/codec.c
+    src/mime.c
 )
 
 file(GLOB TATR_EXPORT_SRC

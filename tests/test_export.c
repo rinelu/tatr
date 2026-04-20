@@ -41,19 +41,6 @@ static void test_export_json_stdout(void)
     ASSERT_OUT_CONTAINS(r, "\"comments\":");
 }
 
-static void test_export_json_pretty(void)
-{
-    char cmd[128];
-    snprintf(cmd, sizeof(cmd), "export %s --format json --pretty", issue_id);
-
-    TatrResult r = tatr(cmd);
-    ASSERT_CMD_OK(r);
-
-    // pretty JSON should contain newlines + indentation
-    ASSERT_OUT_CONTAINS(r, "\n");
-    ASSERT_OUT_CONTAINS(r, "  \"title\"");
-}
-
 static void test_export_json_minified(void)
 {
     char cmd[128];
@@ -146,7 +133,6 @@ void suite_export(void)
 
     RUN_TEST_F(test_export_markdown_stdout, setup_issue, NULL);
     RUN_TEST_F(test_export_json_stdout,     setup_issue, NULL);
-    RUN_TEST_F(test_export_json_pretty,     setup_issue, NULL);
     RUN_TEST_F(test_export_json_minified,   setup_issue, NULL);
     RUN_TEST_F(test_export_to_file,         setup_issue, NULL);
     RUN_TEST_F(test_export_invalid_format,  setup_issue, NULL);

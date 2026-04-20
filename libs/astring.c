@@ -32,11 +32,6 @@ void sb_pad_align(String_Builder *sb, size_t size)
 
 // --------------------------
 
-bool sv_empty(String_View sv)
-{
-    return sv.count == 0;
-}
-
 String_View sv_slice_while(String_View *sv, int (*p)(int x))
 {
     size_t i = 0;
@@ -164,7 +159,7 @@ bool sv_has(String_View sv, const char *key, char delim)
 
 bool sv_contains(String_View haystack, String_View needle)
 {
-    if (needle.count == 0) return true;
+    if (sv_empty(needle)) return true;
     if (needle.count > haystack.count) return false;
 
     String_View cursor = haystack;
@@ -180,7 +175,7 @@ bool sv_contains(String_View haystack, String_View needle)
 
 bool sv_icontains(String_View haystack, String_View needle)
 {
-    if (needle.count == 0) return true;
+    if (sv_empty(needle)) return true;
     if (needle.count > haystack.count) return false;
 
     String_View cursor = haystack;

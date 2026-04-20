@@ -5,7 +5,7 @@ int cmd_delete(int argc, char **argv)
 {
     bool *force = clag_bool("force", 'f', false, "Ignore missing issues and suppress errors");
     bool *interactive = clag_bool("interactive", 'i', false, "Prompt before delete");
-    clag_usage("<id>... [option]");
+    clag_usage("<id>... [options]");
 
     if (!clag_parse(argc, argv)) {
         clag_print_error(stderr);

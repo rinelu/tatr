@@ -19,6 +19,8 @@ SRC := \
 	$(SRC_DIR)/issue.c \
     $(SRC_DIR)/editor.c \
     $(SRC_DIR)/tatrlog.c \
+    $(SRC_DIR)/codec.c \
+    $(SRC_DIR)/mime.c \
 	$(SRC_DIR)/ui.c
 
 EXPORT_SRC := $(wildcard $(CMD_DIR)/export/*.c)

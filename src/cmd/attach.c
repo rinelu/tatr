@@ -46,24 +46,21 @@ int cmd_attach(int argc, char **argv)
             sb_free(dst);
             goto defer;
         }
-
         sb_append_null(&dst);
 
-        String_Builder expected = {0};
-        sb_append(&expected, '/');
-        sb_append_cstr(&expected, base);
-        sb_append_null(&expected);
-        bool renamed = !sv_ends_with_cstr(sb_to_sv(dst), expected.items);
-        sb_free(expected);
+        const char *dst_base = fs_path_name(dst.items);
+        bool renamed = strcmp(base, dst_base) != 0;
 
         if (!fs_copy_file(src, dst.items)) {
             log_error("Cannot copy '%s'", src);
             sb_free(dst);
             goto defer;
         }
-        tatrlog_append(TATRLOG_ATTACH, id, temp_sprintf("file=%s", base));
+
+        tatrlog_append(TATRLOG_ATTACH, id, temp_sprintf("file=%s", dst.items));
+
         if (renamed)
-            log_info("Attached %s -> %s (renamed, conflict resolved)", base, dst.items);
+            log_info("Attached %s -> %s (renamed, conflict resolved)", base, dst_base);
         else
             log_info("Attached %s", base);
 

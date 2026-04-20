@@ -61,7 +61,7 @@ static int open_full_editor_new(Issue *iss)
 
     String_View ev = sv_trim(sb_to_sv(edited));
     String_View iv = sv_trim(sb_to_sv(initial));
-    if (ev.count == 0 || sv_eq(ev, iv)) {
+    if (sv_empty(ev) || sv_eq(ev, iv)) {
         log_warn("aborted (no changes)");
         goto defer;
     }

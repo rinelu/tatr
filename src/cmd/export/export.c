@@ -37,12 +37,12 @@ int cmd_export(int argc, char **argv)
     char **format    = clag_str("format",       'f',        "markdown", "Export format");
     char **output    = clag_str ("output",      'o', NULL,  "Write to file instead of stdout");
     bool  *ls_format = clag_bool("list-format", 'L', NULL,  "List all supported format.");
-    bool  *pretty    = clag_bool("pretty",      'p', true,  "Pretty JSON output");
     bool  *minify    = clag_bool("minify",      'm', false, "Minified JSON output");
+    bool  *embed     = clag_bool("embed",       'e', false, "");
+    bool  *compress  = clag_bool("compress",    'c', false, "");
 
     clag_choices("format", "markdown", "json");
     clag_usage("<id> [options]");
-    clag_mutex("pretty", "minify");
 
     if (!clag_parse(argc, argv)) {
         clag_print_error(stderr);
@@ -97,8 +97,9 @@ int cmd_export(int argc, char **argv)
     }
 
     Export_Opts opts = {
-        .pretty = *pretty && !*minify,
-        .embed  = false,
+        .pretty   = !*minify,
+        .embed    = *embed,
+        .compress = *compress,
     };
 
     exp->render(&iss, out, &opts);

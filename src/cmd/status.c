@@ -143,7 +143,7 @@ int cmd_status(int argc, char **argv)
         String_View tmp = iss.tags;
         while (tmp.count > 0) {
             String_View t = sv_trim(sv_slice_by_delim(&tmp, ','));
-            if (t.count == 0) continue;
+            if (sv_empty(t)) continue;
 
             int idx = tag_find(&tags, t);
             if (idx >= 0) {

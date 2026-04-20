@@ -50,7 +50,7 @@ bool sv_slice_suffix(String_View *sv, String_View suffix);
 String_View sv_trim(String_View sv);
 String_View sv_trim_left(String_View sv);
 String_View sv_trim_right(String_View sv);
-bool sv_empty(String_View sv);
+#define sv_empty(sv) ((sv).count == 0)
 bool sv_eq(String_View a, String_View b);
 bool sv_eq_cstr(String_View a, const char* b);
 bool sv_has(String_View sv, const char *key, char delim);
