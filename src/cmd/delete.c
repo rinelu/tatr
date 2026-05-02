@@ -21,7 +21,7 @@ int cmd_delete(int argc, char **argv)
     Config cfg = {0};
     config_load(&cfg);
     const char *author = config_get(&cfg, "author");
-    if (!author) author = getenv("USER");
+    if (!author) author = USERNAME_ENV;
     config_free(&cfg);
 
     Temp_Checkpoint tmark = temp_save();

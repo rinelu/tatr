@@ -115,9 +115,6 @@ bool editor_edit(const char *content, size_t content_len, const char *suffix, St
 #endif
 
 #ifdef _WIN32
-    char tmp_dir[MAX_PATH];
-    GetTempPathA(sizeof(tmp_dir), tmp_dir);
-
     char tmp_base[MAX_PATH];
     snprintf(tmp_base, sizeof(tmp_base), "%statr_editor", tmp_dir);
 

@@ -86,7 +86,7 @@ bool tatrlog_commit(TatrLog_Builder *b);
 void tatrlog_discard(TatrLog_Builder *b);
 
 // TLOG(TATRLOG_EDIT, id, {
-//     tatrlog_field(&__log, "author", getenv("USER"));
+//     tatrlog_field(&__log, "author", USERNAME_ENV);
 //     tatrlog_field(&__log, "field",  "priority");
 //     tatrlog_field(&__log, "old",    "normal");
 //     tatrlog_field(&__log, "new",    "high");

@@ -1,14 +1,12 @@
 #include "cmd.h"
 #include "editor.h"
-#include "issue.h"
-#include "temp.h"
 
 static const char *get_author(void)
 {
     Config cfg = {0};
     config_load(&cfg);
     const char *author = config_get(&cfg, "author");
-    if (!author) author = get_author();
+    if (!author) author = USERNAME_ENV;
     // use author, then:
     config_free(&cfg);
     return author;

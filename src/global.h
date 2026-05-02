@@ -6,4 +6,10 @@
 #define TATRLOG_SEPARATOR "--- entry ---"
 #define CONFIG_LOCAL_PATH  ".tatr/config"
 
+#ifdef _WIN32
+#define USERNAME_ENV getenv("USERNAME")
+#else
+#define USERNAME_ENV getenv("USER")
+#endif
+
 #endif // GLOBAL_H_

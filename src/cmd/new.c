@@ -105,7 +105,7 @@ int cmd_new(int argc, char **argv)
     const char *def_priority = config_get_or_default(&cfg, "default_priority");
     const char *def_status   = config_get_or_default(&cfg, "default_status");
     const char *author       = config_get(&cfg, "author");
-    if (!author) author = getenv("USER");
+    if (!author) author = USERNAME_ENV;
     config_free(&cfg);
 
     char     **title      = clag_str ("title",       't', NULL,         "Issue title");

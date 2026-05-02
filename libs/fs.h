@@ -2,11 +2,12 @@
 #define FS_H_
 
 #include "astring.h"
-#include <dirent.h>
 
 #ifdef _WIN32
 #include <windows.h>
 #include <direct.h>
+#else
+#include <dirent.h>
 #endif
 
 typedef struct {
