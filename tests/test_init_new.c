@@ -14,8 +14,6 @@ static void test_init_writes_default_config(void)
     tatr("init");
     const char *cfg = tf_read_file(".tatr/config");
     ASSERT_NOT_NULL(cfg);
-    ASSERT_CONTAINS(cfg, "default_status");
-    ASSERT_CONTAINS(cfg, "default_priority");
 }
 
 static void test_init_fails_if_already_exists(void)

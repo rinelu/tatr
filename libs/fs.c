@@ -2,8 +2,6 @@
 #include "temp.h"
 
 #include <assert.h>
-#include <dirent.h>
-#include <fcntl.h>
 #include <stdarg.h>
 #include <stddef.h>
 #include <errno.h>
@@ -11,8 +9,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifdef _WIN32
+#include <windows.h>
+#include <direct.h>
+#include <io.h>
+#else
+#include <dirent.h>
+#include <fcntl.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#endif
 
 #define printf(...) ((void)0)
 

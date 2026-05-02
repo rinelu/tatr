@@ -115,10 +115,29 @@ bool editor_edit(const char *content, size_t content_len, const char *suffix, St
 #endif
 
 #ifdef _WIN32
-    if (_mktemp_s(tmp_path, sizeof(tmp_path)) != 0) {
+    char tmp_dir[MAX_PATH];
+    GetTempPathA(sizeof(tmp_dir), tmp_dir);
+
+    char tmp_base[MAX_PATH];
+    snprintf(tmp_base, sizeof(tmp_base), "%statr_editor", tmp_dir);
+
+    if (GetTempFileNameA(tmp_dir, "tatr", 0, tmp_path) == 0) {
         log_error("cannot create temp file");
         return false;
     }
+
+    if (suffix && *suffix) {
+        char suffixed[MAX_PATH];
+        snprintf(suffixed, sizeof(suffixed), "%s%s", tmp_path, suffix);
+
+        if (!MoveFileExA(tmp_path, suffixed, MOVEFILE_REPLACE_EXISTING)) {
+            DeleteFileA(tmp_path);
+            log_error("cannot rename temp file to add suffix");
+            return false;
+        }
+        memcpy(tmp_path, suffixed, sizeof(tmp_path));
+    }
+
     FILE *f = fopen(tmp_path, "wb");
 #else
     size_t suffix_len_sz = suffix ? strlen(suffix) : 0;

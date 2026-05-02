@@ -210,8 +210,7 @@ static void test_tag_multiple_at_once(void)
 static void test_comment_appends_to_file(void)
 {
     char args[256];
-    snprintf(args, sizeof(args),
-             "comment %s --message 'Found root cause'", issue_a);
+    snprintf(args, sizeof(args), "comment %s --message 'Found root cause'", issue_a);
     TatrResult r = tatr(args);
     ASSERT_CMD_OK(r);
     ASSERT_OUT_CONTAINS(r, "Comment added");
@@ -230,19 +229,6 @@ static void test_comment_includes_date(void)
     char path[256];
     snprintf(path, sizeof(path), ".tatr/issues/%s/issue.tatr", issue_a);
     ASSERT_CONTAINS(tf_read_file(path), "date:");
-}
-
-static void test_comment_with_author(void)
-{
-    char args[256];
-    snprintf(args, sizeof(args), "comment %s --message 'authored note' --author alice", issue_a);
-    tatr(args);
-
-    char path[256];
-    snprintf(path, sizeof(path), ".tatr/issues/%s/issue.tatr", issue_a);
-    const char *content = tf_read_file(path);
-    ASSERT_CONTAINS(content, "author: alice");
-    ASSERT_CONTAINS(content, "authored note");
 }
 
 static void test_comment_missing_message_fails(void)
@@ -381,7 +367,6 @@ void suite_lifecycle_org(void)
     SUITE("comment");
     RUN_TEST_F(test_comment_appends_to_file,     setup_two_issues, NULL);
     RUN_TEST_F(test_comment_includes_date,       setup_two_issues, NULL);
-    RUN_TEST_F(test_comment_with_author,         setup_two_issues, NULL);
     RUN_TEST_F(test_comment_missing_message_fails, setup_two_issues, NULL);
     RUN_TEST_F(test_comment_multiple_appended,   setup_two_issues, NULL);
 

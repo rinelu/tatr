@@ -1,3 +1,4 @@
+#include "astring.h"
 #include "cmd.h"
 
 int cmd_comment(int argc, char **argv)
@@ -51,7 +52,7 @@ int cmd_comment(int argc, char **argv)
 
     TLOG(TATRLOG_COMMENT, id, {
         tatrlog_field(&__log, "author", author);
-        tatrlog_body(&__log, iss.raw.data);
+        tatrlog_body(&__log, temp_sv_to_cstr(iss.raw));
     });
 
     log_info("Comment added to issue %s", id);

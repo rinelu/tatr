@@ -4,15 +4,17 @@
 #include "editor.h"
 #include "temp.h"
 
+#if defined(__linux__)
+#include <sys/random.h>
+#endif
+
 static void fill_random(unsigned char *buf, size_t len)
 {
 #if defined(__APPLE__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__)
     arc4random_buf(buf, len);
 #elif defined(_WIN32)
-#pragma comment(lib, "bcrypt.lib")
     BCryptGenRandom(NULL, buf, (ULONG)len, BCRYPT_USE_SYSTEM_PREFERRED_RNG);
 #else
-#include <sys/random.h>
 #if defined(__linux__) && defined(__GLIBC__) && (__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 25))
     getrandom(buf, len, 0);
 #else

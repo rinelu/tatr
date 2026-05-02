@@ -12,6 +12,8 @@
 #    else
 #        define FMT(STRING_INDEX, FIRST_TO_CHECK) __attribute__ ((format (printf, STRING_INDEX, FIRST_TO_CHECK)))
 #    endif // __MINGW_PRINTF_FORMAT
+#else
+#    define FMT(STRING_INDEX, FIRST_TO_CHECK)
 #endif
 
 #ifdef __cplusplus
@@ -101,7 +103,11 @@ inline static time_t parse_date(const char *s)
 inline static void human_timestamp(time_t t, char *buf, size_t size)
 {
     struct tm tm;
+#ifdef _WIN32
+    localtime_s(&tm, &t);
+#else
     localtime_r(&t, &tm);
+#endif
 
     strftime(buf, size, "%a %b %e %H:%M:%S %Y %z", &tm);
 }

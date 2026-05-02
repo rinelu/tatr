@@ -37,7 +37,25 @@ static inline TatrResult tatr(const char *args)
 
     String_Builder *cmd = tf_sb_new();
     sb_append_cstr(cmd, TATR_BIN " ");
-    sb_append_cstr(cmd, args ? args : "");
+    if (args) {
+        const char *p = args;
+        while (*p) {
+            if (*p == '\'') {
+                // convert single-quoted token to double-quoted
+                sb_append_char(cmd, '"');
+                p++;
+                while (*p && *p != '\'') {
+                    // escape any double quotes inside
+                    if (*p == '"') sb_append_char(cmd, '\\');
+                    sb_append_char(cmd, *p++);
+                }
+                sb_append_char(cmd, '"');
+                if (*p == '\'') p++;
+            } else {
+                sb_append_char(cmd, *p++);
+            }
+        }
+    }
     sb_append_null(cmd);
 
     SECURITY_ATTRIBUTES sa = { sizeof(sa), NULL, TRUE };
