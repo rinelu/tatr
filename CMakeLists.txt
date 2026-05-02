@@ -115,7 +115,6 @@ endif()
 if(MSVC)
     target_compile_definitions(tatr      PRIVATE _CRT_SECURE_NO_WARNINGS _CRT_NONSTDC_NO_WARNINGS)
     target_compile_definitions(tatrlib   PRIVATE _CRT_SECURE_NO_WARNINGS _CRT_NONSTDC_NO_WARNINGS)
-    target_compile_definitions(run_tests PRIVATE _CRT_SECURE_NO_WARNINGS _CRT_NONSTDC_NO_WARNINGS)
 endif()
 
 # ---- Sanitizers (GCC/Clang only) ----

@@ -35,6 +35,7 @@ target_compile_definitions(run_tests
 
 if(TATR_ENABLE_WARNINGS)
     if(MSVC)
+        target_compile_definitions(run_tests PRIVATE _CRT_SECURE_NO_WARNINGS _CRT_NONSTDC_NO_WARNINGS)
         target_compile_options(run_tests PRIVATE /W4)
     else()
         target_compile_options(run_tests PRIVATE
