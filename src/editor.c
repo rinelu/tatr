@@ -168,3 +168,8 @@ bool editor_edit(const char *content, size_t content_len, const char *suffix, St
 
     return true;
 }
+
+bool editor_open(const char *path)
+{
+    return run_editor(get_editor(), path) == 0;
+}

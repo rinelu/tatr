@@ -28,8 +28,8 @@ void sb_pad_align(String_Builder *sb, size_t size);
 #define sb_free(sb) free((sb).items)
 
 typedef struct {
-    size_t count;
     const char *data;
+    size_t count;
 } String_View;
 
 #define sv_split_by_delim(sv, delim, out)                     \

@@ -21,6 +21,7 @@ SRC := \
     $(SRC_DIR)/tatrlog.c \
     $(SRC_DIR)/codec.c \
     $(SRC_DIR)/mime.c \
+    $(SRC_DIR)/config.c \
 	$(SRC_DIR)/ui.c
 
 EXPORT_SRC := $(wildcard $(CMD_DIR)/export/*.c)
@@ -42,6 +43,7 @@ CMD_SRC := \
 	$(CMD_DIR)/detach.c \
 	$(CMD_DIR)/tag.c \
 	$(CMD_DIR)/log.c \
+	$(CMD_DIR)/config.c \
 	$(CMD_DIR)/status.c
 
 LIB_SRC := \

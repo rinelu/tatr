@@ -57,8 +57,9 @@ int cmd_detach(int argc, char **argv)
             }
             continue;
         }
-
-        tatrlog_append(TATRLOG_DETACH, id, temp_sprintf("file=%s", filename));
+        TLOG(TATRLOG_DETACH, id, {
+            tatrlog_field(&__log, "file", filename);
+        });
         log_info("Removed '%s' from issue %s", filename, id);
     }
 

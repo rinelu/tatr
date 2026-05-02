@@ -1,5 +1,6 @@
 #include "astring.h"
 #include "cmd.h"
+#include "config.h"
 #include "editor.h"
 #include "temp.h"
 
@@ -97,13 +98,21 @@ static int maybe_edit_body(Issue *iss, String_Builder *body_text)
 
 int cmd_new(int argc, char **argv)
 {
-    char     **title      = clag_str ("title",       't', NULL,     "Issue title");
-    char     **priority   = clag_str ("priority",    'p', "normal", "Priority");
-    char     **status     = clag_str ("status",      's', "open",   "Status");
-    Clag_List *tags       = clag_list("tag",         'T', ',',      "Tags");
-    char     **body       = clag_str ("body",        'b', NULL,     "Body");
-    char     **file       = clag_str ("file",        'F', NULL,     "Body from file");
-    bool     *interactive = clag_bool("interactive", 'i', false,    "Interactive mode");
+    Config cfg = {0};
+    config_load(&cfg);
+    const char *def_priority = config_get_or_default(&cfg, "default_priority");
+    const char *def_status   = config_get_or_default(&cfg, "default_status");
+    const char *author       = config_get(&cfg, "author");
+    if (!author) author = getenv("USER");
+    config_free(&cfg);
+
+    char     **title      = clag_str ("title",       't', NULL,         "Issue title");
+    char     **priority   = clag_str ("priority",    'p', def_priority, "Priority");
+    char     **status     = clag_str ("status",      's', def_status,   "Status");
+    Clag_List *tags       = clag_list("tag",         'T', ',',          "Tags");
+    char     **body       = clag_str ("body",        'b', NULL,         "Body");
+    char     **file       = clag_str ("file",        'F', NULL,         "Body from file");
+    bool     *interactive = clag_bool("interactive", 'i', false,        "Interactive mode");
 
     clag_usage("[options]");
     clag_choices("status", "open", "closed", "wontfix", "in-progress");
@@ -196,8 +205,11 @@ save_issue:
         goto defer;
     }
 
+    TLOG(TATRLOG_CREATE, id.items, {
+        tatrlog_field(&__log, "author", author);
+        tatrlog_field(&__log, "title",  *title);
+    });
     log_info("Created issue %s", id.items);
-    tatrlog_append(TATRLOG_CREATE, id.items, *title ? *title : "");
     result = 0;
 
 defer:

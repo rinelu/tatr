@@ -18,6 +18,12 @@ int cmd_delete(int argc, char **argv)
         return 1;
     }
 
+    Config cfg = {0};
+    config_load(&cfg);
+    const char *author = config_get(&cfg, "author");
+    if (!author) author = getenv("USER");
+    config_free(&cfg);
+
     Temp_Checkpoint tmark = temp_save();
     int result = 0;
     for (int i = 0; i < clag_rest_argc(); i++) {
@@ -48,7 +54,10 @@ int cmd_delete(int argc, char **argv)
             continue;
         }
 
-        tatrlog_append(TATRLOG_DELETE, id, temp_sv_to_cstr(iss.title));
+        TLOG(TATRLOG_DELETE, id, {
+            tatrlog_field(&__log, "author", author);
+            tatrlog_fieldsv(&__log, "title", iss.title);
+        });
         log_info("Deleted issue %s", id);
         issue_free(&iss);
     }

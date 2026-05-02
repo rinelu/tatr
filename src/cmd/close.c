@@ -39,7 +39,19 @@ int cmd_close(int argc, char **argv)
         log_error("tatr: failed to close issue %s", id);
         goto defer;
     }
-    tatrlog_append(TATRLOG_CLOSE, id, temp_sprintf("status=%s", new_status));
+
+    Config cfg = {0};
+    config_load(&cfg);
+    const char *author = config_get(&cfg, "author");
+    if (!author) author = getenv("USER");
+    config_free(&cfg);
+
+    TLOG(TATRLOG_CLOSE, id, {
+        tatrlog_field(&__log, "author", author);
+        tatrlog_field(&__log, "title",  temp_strndup(iss.title.data, iss.title.count));
+        tatrlog_field(&__log, "status", new_status);
+    });
+
     log_info("Closed issue %s  (status: %s)", id, new_status);
     issue_save(&iss);
 

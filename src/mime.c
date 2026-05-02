@@ -183,7 +183,7 @@ const char *mime_from_buf(const unsigned char *buf, size_t len)
         return "image/webp";
 
     // WAV: RIFF + WAVE at offset 8
-    if (sig_match(buf, len, 0, SIG_WAV, sizeof SIG_WAV) &&
+    if (sig_match(buf, len, 0, SIG_WAV, sizeof(SIG_WAV)) &&
         sig_match(buf, len, 8, (const unsigned char *)"WAVE", 4))
         return "audio/wav";
 
@@ -205,7 +205,7 @@ const char *mime_from_file(const char *path)
     FILE *f = fopen(path, "rb");
     if (!f) return "application/octet-stream";
 
-    size_t n = fread(buf, 1, sizeof buf, f);
+    size_t n = fread(buf, 1, sizeof(buf), f);
     fclose(f);
 
     const char *m = mime_from_buf(buf, n);

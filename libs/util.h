@@ -98,6 +98,12 @@ inline static time_t parse_date(const char *s)
     return 0;
 }
 
+inline static void human_timestamp(time_t t, char *buf, size_t size)
+{
+    struct tm tm;
+    localtime_r(&t, &tm);
 
+    strftime(buf, size, "%a %b %e %H:%M:%S %Y %z", &tm);
+}
 
 #endif // LIB_UTIL_H_

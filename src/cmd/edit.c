@@ -3,6 +3,17 @@
 #include "issue.h"
 #include "temp.h"
 
+static const char *get_author(void)
+{
+    Config cfg = {0};
+    config_load(&cfg);
+    const char *author = config_get(&cfg, "author");
+    if (!author) author = get_author();
+    // use author, then:
+    config_free(&cfg);
+    return author;
+}
+
 static String_View get_field(const Issue *iss, const char *field)
 {
     if (strcmp(field, "title")    == 0) return iss->title;
@@ -34,8 +45,11 @@ static int edit_full(Issue *iss)
     sb_free(iss->raw_sb);
     iss->raw_sb = edited;
     issue_save(iss);
-    tatrlog_append(TATRLOG_EDIT, temp_sv_to_cstr(iss->id), "full-edit");
-    log_info("issue %.*s updated", (int)iss->id.count, iss->id.data);
+    TLOG(TATRLOG_EDIT, iss->id.data, {
+        tatrlog_field(&__log, "author", get_author());
+        tatrlog_field(&__log, "title",  temp_strndup(iss->title.data, iss->title.count));
+    });
+    log_info("issue "SV_Fmt" updated", SV_Arg(iss->id));
     return 0;
 }
 
@@ -84,7 +98,10 @@ static int edit_field_in_editor(Issue *iss, const char *field)
     }
 
     issue_save(iss);
-    tatrlog_append(TATRLOG_EDIT, temp_sv_to_cstr(iss->id), temp_sprintf("field=%s", field));
+    TLOG(TATRLOG_EDIT, iss->id.data, {
+        tatrlog_field(&__log, "author", get_author());
+        tatrlog_field(&__log, "title",  temp_strndup(iss->title.data, iss->title.count));
+    });
     log_info("updated %s in issue "SV_Fmt, field, SV_Arg(iss->id));
     sb_free(edited);
     return 0;
@@ -126,8 +143,13 @@ static int edit_field_direct(Issue *iss, const char *field, const char *value)
     log_msg("  new: %s", value);
 
     issue_save(iss);
-    tatrlog_append(TATRLOG_EDIT, temp_sv_to_cstr(iss->id),
-        temp_sprintf("field=%s old=%s new=%s", field, old_copy, value));
+    TLOG(TATRLOG_EDIT, iss->id.data, {
+        tatrlog_field(&__log, "author", get_author());
+        tatrlog_field(&__log, "title",  temp_strndup(iss->title.data, iss->title.count));
+        tatrlog_field(&__log, "field",  field);
+        tatrlog_field(&__log, "old",    old_copy);
+        tatrlog_field(&__log, "new",    value);
+    });
     free(old_copy);
     return 0;
 }

@@ -3,7 +3,6 @@
 int cmd_comment(int argc, char **argv)
 {
     char **message = clag_str("message", 'm', NULL, "Comment text");
-    char **author  = clag_str("author",  'a', NULL, "Author name/handle");
 
     clag_usage("<id> --message <text> [--author <name>]");
     clag_required("message");
@@ -27,15 +26,19 @@ int cmd_comment(int argc, char **argv)
         return 1;
     }
 
+    Config cfg = {0};
+    config_load(&cfg);
+    const char *author  = config_get(&cfg, "author");
+    if (!author) author = getenv("USER");
+    config_free(&cfg);
+
     bool result = 1;
     char ts[64];
     timestamp_iso(ts, sizeof(ts));
 
     sb_append_cstr(&iss.raw_sb, "\n---comment---\n");
     sb_appendf(&iss.raw_sb, "date: %s\n", ts);
-
-    if (*author && **author)
-        sb_appendf(&iss.raw_sb, "author: %s\n", *author);
+    sb_appendf(&iss.raw_sb, "author: %s\n", author);
 
     sb_append_cstr(&iss.raw_sb, "\n");
     sb_append_cstr(&iss.raw_sb, *message);
@@ -45,7 +48,11 @@ int cmd_comment(int argc, char **argv)
         log_error("Cannot write comment to issue %s", id);
         goto defer;
     }
-    tatrlog_append(TATRLOG_COMMENT, id, temp_sprintf("author=%s", *author ? *author : ""));
+
+    TLOG(TATRLOG_COMMENT, id, {
+        tatrlog_field(&__log, "author", author);
+        tatrlog_body(&__log, iss.raw.data);
+    });
 
     log_info("Comment added to issue %s", id);
     result = 0;

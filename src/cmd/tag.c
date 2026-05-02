@@ -82,8 +82,19 @@ int cmd_tag(int argc, char **argv)
         goto defer;
     }
     sb_append_null(&logtags);
+
+    Config cfg = {0};
+    config_load(&cfg);
+    const char *author = config_get(&cfg, "author");
+    if (!author) author = getenv("USER");
+    config_free(&cfg);
+
     if (logtags.count > 1)
-        tatrlog_append(TATRLOG_TAG, id, temp_sprintf("%s=%s", *remove ? "remove" : "add", logtags.items));
+        TLOG(TATRLOG_TAG, id, {
+            tatrlog_field(&__log, "author", author);
+            tatrlog_field(&__log, *remove ? "remove" : "add", logtags.items);
+        });
+
     log_info("Updated tags for issue %s", id);
     result = 0;
 

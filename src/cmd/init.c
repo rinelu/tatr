@@ -24,8 +24,6 @@ int cmd_init(int argc, char **argv)
     if (!fs_file_exists(".tatr/config") || *force) {
         String_Builder cfg = {0};
         sb_append_cstr(&cfg, "# tatr configuration\n");
-        sb_append_cstr(&cfg, "default_status: open\n");
-        sb_append_cstr(&cfg, "default_priority: normal\n");
         bool ok = fs_write_file(".tatr/config", cfg.items, cfg.count);
 
         sb_free(cfg);

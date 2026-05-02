@@ -32,6 +32,7 @@ set(TATR_SRC
     src/tatrlog.c
     src/codec.c
     src/mime.c
+    src/config.c
 )
 
 file(GLOB TATR_EXPORT_SRC
@@ -56,6 +57,7 @@ set(TATR_CMD_SRC
     src/cmd/tag.c
     src/cmd/status.c
     src/cmd/log.c
+    src/cmd/config.c
     ${TATR_EXPORT_SRC}
 )
 
