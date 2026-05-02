@@ -383,16 +383,28 @@ void clag_range_double(const char *name, double   lo, double   hi);
 //   clag_choices("mode", "fast", "slow");
 void  clagc__choices(Clag_Context *cx, const char *name, const char **choices);
 void  clag__choices(const char *name, const char **choices);
-#define CLAG__DEFINE_CHOICES(...)                      \
-    static const char *_clag_choices_##__LINE__[] = {  \
-        __VA_ARGS__, NULL                              \
+// force expansion before concatenation
+#define CLAG__CAT(a, b) CLAG__CAT_IMPL(a, b)
+#define CLAG__CAT_IMPL(a, b) a##b
+
+#define CLAG__DEFINE_CHOICES(id, ...)                 \
+    static const char *CLAG__CAT(_clag_choices_, id)[] = { \
+        __VA_ARGS__, NULL                            \
     };
-#define  clag_choices(name, ...)      \
-    CLAG__DEFINE_CHOICES(__VA_ARGS__) \
-    clag__choices(name, _clag_choices_##__LINE__);
-#define  clagc_choices(cx, name, ...)     \
-    CLAG__DEFINE_CHOICES(__VA_ARGS__)     \
-    clagc__choices(cx, name, _clag_choices_##__LINE__);
+
+#define CLAG__CHOICES_IMPL(id, name, ...)             \
+    CLAG__DEFINE_CHOICES(id, __VA_ARGS__)             \
+    clag__choices(name, CLAG__CAT(_clag_choices_, id))
+
+#define CLAGC__CHOICES_IMPL(id, cx, name, ...)        \
+    CLAG__DEFINE_CHOICES(id, __VA_ARGS__)             \
+    clagc__choices(cx, name, CLAG__CAT(_clag_choices_, id))
+
+#define clag_choices(name, ...)                      \
+    CLAG__CHOICES_IMPL(__LINE__, name, __VA_ARGS__)
+
+#define clagc_choices(cx, name, ...)                 \
+    CLAGC__CHOICES_IMPL(__LINE__, cx, name, __VA_ARGS__)
 
 // Custom validator hook.
 // Called after type parsing and built-in constraint checks succeed.
@@ -1619,7 +1631,7 @@ static void clag__print_flag_row(Clag_Context *cx, FILE *s, const Clag *f, int n
         DAPP(" {");
         for (const char **c = f->choices; *c; c++) {
             if (c != f->choices) DAPP("|");
-            DAPP("%s", *c);
+            DAPP(" %s ", *c);
         }
         DAPP("}");
     }
@@ -1692,8 +1704,11 @@ void clagc_print_help(Clag_Context *cx, FILE *s)
 {
     const char *prog = cx->program_name   ? cx->program_name   : "program";
     const char *syn  = cx->usage_synopsis ? cx->usage_synopsis : "[options]";
-    fprintf(s, "Usage: %s %s\n\nOptions:\n", prog, syn);
-    clagc_print_options(cx, s);
+    fprintf(s, "Usage: %s %s\n", prog, syn);
+    if (clagc_count(cx) > 0) {
+        fprintf(s, "\nOptions:\n");
+        clagc_print_options(cx, s);
+    }
 
     if (cx->examples_count > 0) {
         fprintf(s, "\nExamples:\n");

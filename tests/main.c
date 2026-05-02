@@ -19,6 +19,7 @@ void suite_list_show_edit(void);
 void suite_lifecycle_org(void);
 void suite_attachments(void);
 void suite_status_meta(void);
+void suite_export(void);
 
 int main(int argc, char **argv)
 {
@@ -41,6 +42,7 @@ int main(int argc, char **argv)
     suite_lifecycle_org();
     suite_attachments();
     suite_status_meta();
+    suite_export();
 
     tf_install_signal_handler();
     tf_run_all_parallel((int)*jobs);

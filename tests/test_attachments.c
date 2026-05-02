@@ -133,7 +133,7 @@ static void test_detach_removes_file(void)
     snprintf(args, sizeof(args), "attach %s notes.txt", issue_id);
     tatr(args);
 
-    snprintf(args, sizeof(args), "detach %s notes.txt --yes", issue_id);
+    snprintf(args, sizeof(args), "detach %s notes.txt", issue_id);
     TatrResult r = tatr(args);
     ASSERT_CMD_OK(r);
     ASSERT_OUT_CONTAINS(r, "Removed");
@@ -146,7 +146,7 @@ static void test_detach_removes_file(void)
 static void test_detach_nonexistent_file_fails(void)
 {
     char args[256];
-    snprintf(args, sizeof(args), "detach %s ghost.txt --yes", issue_id);
+    snprintf(args, sizeof(args), "detach %s ghost.txt", issue_id);
     TatrResult r = tatr(args);
     ASSERT_CMD_FAIL(r);
     ASSERT_OUT_CONTAINS(r, "not found");
@@ -154,7 +154,7 @@ static void test_detach_nonexistent_file_fails(void)
 
 static void test_detach_unknown_issue_fails(void)
 {
-    TatrResult r = tatr("detach ghost_id notes.txt --yes");
+    TatrResult r = tatr("detach ghost_id notes.txt");
     ASSERT_CMD_FAIL(r);
     ASSERT_OUT_CONTAINS(r, "not found");
 }
@@ -180,7 +180,7 @@ static void test_detach_does_not_affect_other_files(void)
              "attach %s report.pdf notes.txt", issue_id);
     tatr(args);
 
-    snprintf(args, sizeof(args), "detach %s notes.txt --yes", issue_id);
+    snprintf(args, sizeof(args), "detach %s notes.txt", issue_id);
     tatr(args);
 
     char path[256];
@@ -194,7 +194,7 @@ static void test_detach_not_listed_in_attachls_after(void)
     char args[256];
     snprintf(args, sizeof(args), "attach %s notes.txt", issue_id);
     tatr(args);
-    snprintf(args, sizeof(args), "detach %s notes.txt --yes", issue_id);
+    snprintf(args, sizeof(args), "detach %s notes.txt", issue_id);
     tatr(args);
 
     snprintf(args, sizeof(args), "attachls %s", issue_id);
@@ -205,27 +205,27 @@ static void test_detach_not_listed_in_attachls_after(void)
 void suite_attachments(void)
 {
     SUITE("attach");
-    RUN_TEST_F(test_attach_single_file,          setup_issue_with_files, NULL);
+    RUN_TEST_F(test_attach_single_file,            setup_issue_with_files, NULL);
     RUN_TEST_F(test_attach_file_content_preserved, setup_issue_with_files, NULL);
-    RUN_TEST_F(test_attach_multiple_files,       setup_issue_with_files, NULL);
+    RUN_TEST_F(test_attach_multiple_files,         setup_issue_with_files, NULL);
     RUN_TEST_F(test_attach_nonexistent_file_fails, setup_issue_with_files, NULL);
-    RUN_TEST_F(test_attach_unknown_issue_fails,  setup_issue_with_files, NULL);
-    RUN_TEST_F(test_attach_missing_args_fails,   setup_issue_with_files, NULL);
-    RUN_TEST_F(test_attach_no_args_fails,        setup_issue_with_files, NULL);
-    RUN_TEST_F(test_attach_conflict_renamed,     setup_issue_with_files, NULL);
+    RUN_TEST_F(test_attach_unknown_issue_fails,    setup_issue_with_files, NULL);
+    RUN_TEST_F(test_attach_missing_args_fails,     setup_issue_with_files, NULL);
+    RUN_TEST_F(test_attach_no_args_fails,          setup_issue_with_files, NULL);
+    RUN_TEST_F(test_attach_conflict_renamed,       setup_issue_with_files, NULL);
 
     SUITE("attachls");
-    RUN_TEST_F(test_attachls_empty,              setup_issue_with_files, NULL);
-    RUN_TEST_F(test_attachls_lists_files,        setup_issue_with_files, NULL);
-    RUN_TEST_F(test_attachls_unknown_issue_fails,setup_issue_with_files, NULL);
-    RUN_TEST_F(test_attachls_missing_id_fails,   setup_issue_with_files, NULL);
+    RUN_TEST_F(test_attachls_empty,               setup_issue_with_files, NULL);
+    RUN_TEST_F(test_attachls_lists_files,         setup_issue_with_files, NULL);
+    RUN_TEST_F(test_attachls_unknown_issue_fails, setup_issue_with_files, NULL);
+    RUN_TEST_F(test_attachls_missing_id_fails,    setup_issue_with_files, NULL);
 
     SUITE("detach");
-    RUN_TEST_F(test_detach_removes_file,                    setup_issue_with_files, NULL);
-    RUN_TEST_F(test_detach_nonexistent_file_fails,          setup_issue_with_files, NULL);
-    RUN_TEST_F(test_detach_unknown_issue_fails,             setup_issue_with_files, NULL);
-    RUN_TEST_F(test_detach_missing_args_fails,              setup_issue_with_files, NULL);
-    RUN_TEST_F(test_detach_no_args_fails,                   setup_issue_with_files, NULL);
-    RUN_TEST_F(test_detach_does_not_affect_other_files,     setup_issue_with_files, NULL);
-    RUN_TEST_F(test_detach_not_listed_in_attachls_after,    setup_issue_with_files, NULL);
+    RUN_TEST_F(test_detach_removes_file,                 setup_issue_with_files, NULL);
+    RUN_TEST_F(test_detach_nonexistent_file_fails,       setup_issue_with_files, NULL);
+    RUN_TEST_F(test_detach_unknown_issue_fails,          setup_issue_with_files, NULL);
+    RUN_TEST_F(test_detach_missing_args_fails,           setup_issue_with_files, NULL);
+    RUN_TEST_F(test_detach_no_args_fails,                setup_issue_with_files, NULL);
+    RUN_TEST_F(test_detach_does_not_affect_other_files,  setup_issue_with_files, NULL);
+    RUN_TEST_F(test_detach_not_listed_in_attachls_after, setup_issue_with_files, NULL);
 }

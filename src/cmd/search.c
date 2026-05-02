@@ -20,15 +20,14 @@ int cmd_search(int argc, char **argv)
 
     if (!clag_parse(argc, argv)) {
         clag_print_error(stderr);
-        clag_print_options(stderr);
         return 1;
     }
+    if (!require_repo()) return 1;
 
     if (clag_rest_argc() < 1) {
         log_error("Missing search query");
         return 1;
     }
-    if (!require_repo()) return 1;
 
     int result = 1;
     Temp_Checkpoint tmark = temp_save();
@@ -65,10 +64,10 @@ int cmd_search(int argc, char **argv)
                     if (!sv_has(iss.tags, value.data, ','))
                         goto false_match;
                 } else if (sv_eq_cstr(key, "status")) {
-                    if (!match_token(iss.status, value, *case_flag))
+                    if (!match_token(issue_status_to_sv(iss.status), value, *case_flag))
                         goto false_match;
                 } else if (sv_eq_cstr(key, "priority")) {
-                    if (!match_token(iss.priority, value, *case_flag))
+                    if (!match_token(issue_priority_to_sv(iss.priority), value, *case_flag))
                         goto false_match;
                 } else if (sv_eq_cstr(key, "title")) {
                     if (!match_token(iss.title, value, *case_flag))
@@ -96,8 +95,12 @@ false_match:
             continue;
         }
 
-        ui_print_search_row(&iss);
-        issue_free(&iss);
+        log_msg("%s"SV_Fmt"%s  %s(%s)%s  "SV_Fmt,
+            log_seq(A_BYELLOW), SV_Arg(iss.id), log_seq(A_RESET),
+            log_seq(ui_status_color(iss.status)),
+            issue_status_to_cstr(iss.status), log_seq(A_RESET),
+            SV_Arg(iss.title));
+            issue_free(&iss);
 
         found++;
         if (*limit > 0 && found >= *limit) break;

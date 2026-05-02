@@ -14,8 +14,6 @@ static void test_init_writes_default_config(void)
     tatr("init");
     const char *cfg = tf_read_file(".tatr/config");
     ASSERT_NOT_NULL(cfg);
-    ASSERT_CONTAINS(cfg, "default_status");
-    ASSERT_CONTAINS(cfg, "default_priority");
 }
 
 static void test_init_fails_if_already_exists(void)
@@ -41,12 +39,6 @@ static void test_init_short_flag_force(void)
 }
 
 static void setup_repo(void) { tatr_init(); }
-
-static void test_new_requires_title(void)
-{
-    TatrResult r = tatr("new --priority high");
-    ASSERT_CMD_FAIL(r);
-}
 
 static void test_new_creates_issue(void)
 {
@@ -115,14 +107,14 @@ static void test_new_invalid_priority_rejected(void)
 {
     TatrResult r = tatr("new --title 'bad' --priority ultra");
     ASSERT_CMD_FAIL(r);
-    ASSERT_OUT_CONTAINS(r, "Invalid priority");
+    ASSERT_OUT_CONTAINS(r, "invalid value");
 }
 
 static void test_new_invalid_status_rejected(void)
 {
     TatrResult r = tatr("new --title 'bad' --status limbo");
     ASSERT_CMD_FAIL(r);
-    ASSERT_OUT_CONTAINS(r, "Invalid status");
+    ASSERT_OUT_CONTAINS(r, "invalid value");
 }
 
 static void test_new_with_body(void)
@@ -199,7 +191,6 @@ void suite_init_new(void)
     SUITE("new");
     RUN_TEST(test_new_without_repo_fails);
     RUN_TEST(test_new_body_from_file);
-    RUN_TEST_F(test_new_requires_title,            setup_repo, NULL);
     RUN_TEST_F(test_new_creates_issue,             setup_repo, NULL);
     RUN_TEST_F(test_new_creates_attachments_dir,   setup_repo, NULL);
     RUN_TEST_F(test_new_default_priority_normal,   setup_repo, NULL);

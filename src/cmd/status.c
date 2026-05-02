@@ -1,5 +1,7 @@
 #include "cmd.h"
+#include "issue.h"
 #include "temp.h"
+#include "ui.h"
 
 typedef struct {
     size_t total;
@@ -11,8 +13,8 @@ typedef struct {
 typedef struct {
     const char *id;
     String_View title;
-    String_View status;
-    String_View priority;
+    Issue_StatusKind status;
+    Issue_PriorityKind priority;
     String_View tags;
     String_View created;
     String_View updated;
@@ -24,23 +26,10 @@ typedef struct {
     size_t capacity;
 } Issues;
 
-static time_t parse_iso(String_View sv)
+static bool ii_is_closed(const IssueInfo *iss)
 {
-    char buf[32] = {0};
-
-    size_t n = sv.count < sizeof(buf)-1 ? sv.count : sizeof(buf)-1;
-    memcpy(buf, sv.data, n);
-    buf[n] = '\0';
-
-    struct tm tm = {0};
-    if (sscanf(buf, "%d-%d-%dT%d:%d:%d",
-               &tm.tm_year, &tm.tm_mon, &tm.tm_mday,
-               &tm.tm_hour, &tm.tm_min, &tm.tm_sec) != 6)
-        return 0; // fallback (invalid time)
-
-    tm.tm_year -= 1900;
-    tm.tm_mon  -= 1;
-    return mktime(&tm);
+    return iss->status == ISSUE_SCLOSED ||
+           iss->status == ISSUE_SWONTFIX;
 }
 
 // extract latest comment date if exists
@@ -62,10 +51,7 @@ static String_View issue_last_updated(const Issue *iss)
     return last;
 }
 
-static bool ii_is_closed(const IssueInfo *iss)
-{
-    return sv_eq_cstr(iss->status, "closed") || sv_eq_cstr(iss->status, "wontfix");
-}
+#define parse_iso(x) parse_time_n(x.data, x.count)
 
 static int cmp_recent(const void *a, const void *b)
 {
@@ -113,11 +99,10 @@ int cmd_status(int argc, char **argv)
 
     if (!clag_parse(argc, argv)) {
         clag_print_error(stderr);
-        clag_print_options(stderr);
         return 1;
     }
-
     if (!require_repo()) return 1;
+
 
     File_Paths ids = {0};
     if (!fs_read_dir(".tatr/issues", &ids)) {
@@ -138,16 +123,16 @@ int cmd_status(int argc, char **argv)
 
         c.total++;
 
-        if (sv_eq_cstr(iss.status, "open")) c.open++;
-        else if (sv_eq_cstr(iss.status, "in-progress")) c.in_progress++;
+        if (iss.status == ISSUE_SOPEN) c.open++;
+        else if (iss.status == ISSUE_SONGOING) c.in_progress++;
         else if (issue_is_closed(&iss)) c.closed++;
 
 #define TV(sv) sv_from_parts(temp_strndup((sv).data, (sv).count), (sv).count)
         IssueInfo info = {
             .id       = temp_strdup(ids.items[i]),
             .title    = TV(iss.title),
-            .status   = TV(iss.status),
-            .priority = TV(iss.priority),
+            .status   = iss.status,
+            .priority = iss.priority,
             .tags     = TV(iss.tags),
             .created  = TV(iss.created),
             .updated  = TV(issue_last_updated(&iss)),
@@ -158,7 +143,7 @@ int cmd_status(int argc, char **argv)
         String_View tmp = iss.tags;
         while (tmp.count > 0) {
             String_View t = sv_trim(sv_slice_by_delim(&tmp, ','));
-            if (t.count == 0) continue;
+            if (sv_empty(t)) continue;
 
             int idx = tag_find(&tags, t);
             if (idx >= 0) {
@@ -192,8 +177,8 @@ int cmd_status(int argc, char **argv)
     bool has_high = false;
     da_foreach(IssueInfo, iss, &issues) {
         if (ii_is_closed(iss)) continue;
-        bool is_crit = sv_eq_cstr(iss->priority, "critical");
-        if (!is_crit && !sv_eq_cstr(iss->priority, "high"))
+        bool is_crit = iss->priority == ISSUE_PCRITICAL;
+        if (!is_crit && iss->priority != ISSUE_PHIGH)
             continue;
         if (!has_high) { 
             log_msg("\n%sHigh priority:%s", A_BOLD_RED, A_RESET);
@@ -210,6 +195,8 @@ int cmd_status(int argc, char **argv)
     da_foreach(IssueInfo, iss, &issues) {
         if (ii_is_closed(iss)) continue;
         double days = difftime(now, parse_iso(iss->updated)) / 86400.0;
+        char time_rel[32];
+        ui_format_time_relative(parse_iso(iss->updated), time_rel, sizeof(time_rel));
         if (days < (double)*stale_days)
             continue;
 
@@ -218,10 +205,10 @@ int cmd_status(int argc, char **argv)
                     A_BOLD_YELLOW, A_RESET, A_DIM, *stale_days, A_RESET);
             has_stale = true;
         }
-        log_msg("  %s%s%s  "SV_Fmt"  %s(%.0fd)%s", 
+        log_msg("  %s%s%s  "SV_Fmt"  %s(%s)%s", 
                 A_YELLOW, iss->id, A_RESET,
                 SV_Arg(iss->title), 
-                A_DIM, days, A_RESET);
+                A_DIM, time_rel, A_RESET);
     }
     if (!has_stale) log_msg("\n%sStale:%s %s(none)%s", A_BOLD, A_RESET, A_DIM, A_RESET);
 
@@ -231,17 +218,12 @@ int cmd_status(int argc, char **argv)
     } else {
         for (size_t i = 0; i < issues.count && i < *limit; i++) {
             IssueInfo *iss = &issues.items[i];
-            double days = difftime(now, parse_iso(iss->updated)) / 86400.0;
-            if (days < 1.0)
-                log_msg("  %s%s%s  "SV_Fmt"  %stoday%s",
-                       A_DIM, iss->id, A_RESET,
-                       SV_Arg(iss->title),
-                       A_GREEN, A_RESET);
-            else
-                log_msg("  %s%s%s  "SV_Fmt"  %s%.0fd%s",
-                       A_DIM, iss->id, A_RESET,
-                       SV_Arg(iss->title),
-                       A_DIM, days, A_RESET);
+            char time_rel[32];
+            ui_format_time_relative(parse_iso(iss->updated), time_rel, sizeof(time_rel));
+            log_msg("  %s%s%s  "SV_Fmt"  %s%s%s",
+                   A_DIM, iss->id, A_RESET,
+                   SV_Arg(iss->title),
+                   A_DIM, time_rel, A_RESET);
         }
     }
 
@@ -271,3 +253,4 @@ int cmd_status(int argc, char **argv)
     return 0;
 }
 
+#undef parse_iso

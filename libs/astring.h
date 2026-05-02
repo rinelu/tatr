@@ -22,14 +22,14 @@ void sb_pad_align(String_Builder *sb, size_t size);
         const char *s = (cstr);       \
         da_appends(sb, s, strlen(s)); \
     } while (0)
-
+#define sb_append_char(sb, c) da_append(sb, c)
 #define sb_append_null(sb) da_appends(sb, "", 1)
 #define sb_append da_append
 #define sb_free(sb) free((sb).items)
 
 typedef struct {
-    size_t count;
     const char *data;
+    size_t count;
 } String_View;
 
 #define sv_split_by_delim(sv, delim, out)                     \
@@ -39,8 +39,6 @@ typedef struct {
             da_append(out, part);                             \
         }                                                     \
     } while (0);
-
-const char *temp_sv_to_cstr(String_View sv);
 
 String_View sv_slice_while(String_View *sv, int (*p)(int x));
 String_View sv_slice_by_delim(String_View *sv, char delim);
@@ -52,6 +50,7 @@ bool sv_slice_suffix(String_View *sv, String_View suffix);
 String_View sv_trim(String_View sv);
 String_View sv_trim_left(String_View sv);
 String_View sv_trim_right(String_View sv);
+#define sv_empty(sv) ((sv).count == 0)
 bool sv_eq(String_View a, String_View b);
 bool sv_eq_cstr(String_View a, const char* b);
 bool sv_has(String_View sv, const char *key, char delim);

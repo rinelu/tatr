@@ -1,8 +1,14 @@
 #include "cmd.h"
+#include "issue.h"
+
+#define COL_ID        24
+#define COL_STATUS    8
+#define COL_PRIORITY  10
+#define COL_GAP       2
 
 typedef struct {
-    const char *status;
-    const char *priority;
+    Issue_StatusKind status;
+    Issue_PriorityKind priority;
     const char *tag;
     bool include_closed;
 } IssueFilter;
@@ -12,10 +18,10 @@ static bool list__match(const Issue *iss, const IssueFilter *f)
     if (!f->include_closed && issue_is_closed(iss))
         return false;
 
-    if (f->status && !sv_eq(iss->status, sv_from_cstr(f->status)))
+    if (f->status != ISSUE_SINVALID && iss->status != f->status)
         return false;
 
-    if (f->priority && !sv_eq(iss->priority, sv_from_cstr(f->priority)))
+    if (f->priority != ISSUE_PINVALID && iss->priority != f->priority)
         return false;
 
     if (f->tag && !issue_has_tag(iss, f->tag))
@@ -32,8 +38,8 @@ typedef struct {
 
 static bool list__parse_opts(int argc, char **argv, ListOptions *opt)
 {
-    char    **status   = clag_str ("status",   's', NULL,  "Filter by status");
-    char    **priority = clag_str ("priority", 'p', NULL,  "Filter by priority");
+    char    **status   = clag_str ("status",   's', "",    "Filter by status");
+    char    **priority = clag_str ("priority", 'p', "",    "Filter by priority");
     char    **tag      = clag_str ("tag",      'T', NULL,  "Filter by tag");
     bool     *all      = clag_bool("all",      'a', false, "Include closed issues");
     bool     *nohdr    = clag_bool("no-header",'q', false, "Suppress column header");
@@ -43,12 +49,11 @@ static bool list__parse_opts(int argc, char **argv, ListOptions *opt)
 
     if (!clag_parse(argc, argv)) {
         clag_print_error(stderr);
-        clag_print_options(stderr);
         return false;
     }
 
-    opt->filter.status         = *status;
-    opt->filter.priority       = *priority;
+    opt->filter.status         = issue_status_from_cstr(*status);
+    opt->filter.priority       = issue_priority_from_cstr(*priority);
     opt->filter.tag            = *tag;
     opt->filter.include_closed = *all;
 
@@ -62,7 +67,6 @@ int cmd_list(int argc, char **argv)
 {
     ListOptions opt = {0};
     if (!list__parse_opts(argc, argv, &opt)) return 1;
-
     if (!require_repo()) return 1;
 
     int result = 1;
@@ -74,8 +78,22 @@ int cmd_list(int argc, char **argv)
     }
 
     da_sort(&ids, cmp_paths);
+    int tw = term_width();
+    int indent = COL_ID + COL_STATUS + COL_PRIORITY + 2 * COL_GAP;
+    int max_title = tw - indent;
+    if (tw < 70) {
+        log_error("Terminal window is too small.");
+        goto defer;
+    }
 
-    if (opt.show_header) ui_print_list_header();
+    if (opt.show_header)
+        log_msg("%s%-*s  %-*s  %-*s  %s%s",
+            log_seq(A_BOLD_WHITE),
+            COL_ID, "ID",
+            COL_STATUS, "STATUS",
+            COL_PRIORITY, "PRIORITY",
+            "TITLE",
+            log_seq(A_RESET));
 
     uint64_t shown = 0;
     for (size_t i = 0; i < ids.count; i++) {
@@ -87,7 +105,21 @@ int cmd_list(int argc, char **argv)
             continue;
         }
 
-        ui_print_issue_row(&iss);
+        if (max_title < 8) max_title = 8;
+        if (max_title > 255) max_title = 255;
+
+        printf("%s%-*.*s%s  ",
+            log_seq(A_BYELLOW), COL_ID, SV_Arg(iss.id), log_seq(A_RESET));
+
+        printf("%s%-*s%s  ",
+            log_seq(ui_status_color(iss.status)), COL_STATUS,
+            issue_status_to_cstr(iss.status), log_seq(A_RESET));
+
+        printf("%s%-*s%s  ",
+            log_seq(ui_priority_color(iss.priority)), COL_PRIORITY,
+            issue_priority_to_cstr(iss.priority), log_seq(A_RESET));
+
+        ui_wrap(stdout, temp_sv_to_cstr(iss.title), indent, indent+2, tw);
         issue_free(&iss);
 
         shown++;

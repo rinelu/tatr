@@ -7,6 +7,7 @@ set(TEST_SOURCES
     test_lifecycle_org.c
     test_attachments.c
     test_status_meta.c
+    test_export.c
 )
 
 add_executable(run_tests
@@ -34,6 +35,7 @@ target_compile_definitions(run_tests
 
 if(TATR_ENABLE_WARNINGS)
     if(MSVC)
+        target_compile_definitions(run_tests PRIVATE _CRT_SECURE_NO_WARNINGS _CRT_NONSTDC_NO_WARNINGS)
         target_compile_options(run_tests PRIVATE /W4)
     else()
         target_compile_options(run_tests PRIVATE
@@ -41,3 +43,11 @@ if(TATR_ENABLE_WARNINGS)
         )
     endif()
 endif()
+
+# --- Test --- 
+
+enable_testing()
+
+add_test(NAME tatr_tests
+    COMMAND $<TARGET_FILE:run_tests>
+)

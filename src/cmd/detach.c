@@ -2,57 +2,67 @@
 
 int cmd_detach(int argc, char **argv)
 {
-    bool *yes = clag_bool("yes", 'y', false, "Skip confirmation prompt");
-    clag_usage("<id> <filename> [--yes]");
+    bool *force       = clag_bool("force",       'f', false, "Ignore missing attachments and suppress errors");
+    bool *interactive = clag_bool("interactive", 'i', false, "Prompt before removing each attachment");
+
+    clag_usage("<id> <file>... [options]");
 
     if (!clag_parse(argc, argv)) {
         clag_print_error(stderr);
-        clag_print_options(stderr);
         return 1;
     }
-
-    if (clag_rest_argc() < 2) {
-        log_error("Usage: tatr detach <id> <filename> [--yes]");
-        return 1;
-    }
-
     if (!require_repo()) return 1;
 
-    Temp_Checkpoint tmark = temp_save();
-    int result = 1;
+    if (clag_rest_argc() < 2) {
+        log_error("missing issue ID or attachment");
+        return 1;
+    }
 
-    const char *id       = clag_rest_argv()[0];
-    const char *filename = clag_rest_argv()[1];
+    const char *id = clag_rest_argv()[0];
+
+    Temp_Checkpoint tmark = temp_save();
+    int result = 0;
 
     Issue iss;
     if (!issue_load(id, &iss)) {
-        log_error("Issue '%s' not found", id);
+        if (!*force) log_error("issue '%s' not found", id);
+        temp_rewind(tmark);
         return 1;
     }
 
-    const char *src = fs_path(iss.attach_path, filename);
-    if (!fs_file_exists(src)) {
-        log_error("Attachment '%s' not found in issue %s", filename, id);
-        goto defer;
-    }
+    for (int i = 1; i < clag_rest_argc(); i++) {
+        const char *filename = clag_rest_argv()[i];
 
-    if (!*yes) {
-        if (!log_confirm("Remove attachment '%s' from issue %s?", filename, id)) {
-            log_msg("Aborted.");
-            goto defer;
+        const char *path = fs_path(iss.attach_path, filename);
+
+        if (!fs_file_exists(path)) {
+            if (!*force) {
+                log_error("attachment '%s' not found in issue %s", filename, id);
+                result = 1;
+            }
+            continue;
         }
+
+        if (*interactive) {
+            if (!log_confirm("Remove '%s' from issue %s?", filename, id)) {
+                log_msg("Skipped %s", filename);
+                continue;
+            }
+        }
+
+        if (!fs_delete_file(path)) {
+            if (!*force) {
+                log_error("failed to remove '%s'", filename);
+                result = 1;
+            }
+            continue;
+        }
+        TLOG(TATRLOG_DETACH, id, {
+            tatrlog_field(&__log, "file", filename);
+        });
+        log_info("Removed '%s' from issue %s", filename, id);
     }
 
-    if (!fs_delete_file(src)) {
-        log_error("Failed to remove attachment '%s'", filename);
-        goto defer;
-    }
-
-    log_info("Removed '%s' from issue %s", filename, id);
-
-    result = 0;
-
-defer:
     issue_free(&iss);
     temp_rewind(tmark);
     return result;

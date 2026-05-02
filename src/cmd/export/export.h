@@ -7,8 +7,9 @@
 #include "fs.h"
 
 typedef struct {
-    bool pretty;  // JSON, etc.
-    bool embed;   // future: embed attachments (base64)
+    bool pretty;
+    bool embed;
+    bool compress;
 } Export_Opts;
 
 typedef struct {

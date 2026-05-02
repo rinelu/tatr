@@ -16,9 +16,9 @@ int cmd_tag(int argc, char **argv)
 
     if (!clag_parse(argc, argv)) {
         clag_print_error(stderr);
-        clag_print_options(stderr);
         return 1;
     }
+    if (!require_repo()) return 1;
 
     if (clag_rest_argc() < 1) {
         log_error("Missing issue ID");
@@ -37,7 +37,9 @@ int cmd_tag(int argc, char **argv)
 
     Tags owned = {0};
     String_Builder sb = {0};
+    String_Builder logtags = {0};
     sv_split_by_delim(iss.tags, ',', &owned);
+    bool first = true;
 
     for (size_t ti = 0; ti < tags->count; ti++) {
         const char *t = tags->items[ti];
@@ -55,15 +57,17 @@ int cmd_tag(int argc, char **argv)
                 goto defer;
             }
             da_remove_unordered(&owned, (size_t)found);
-            continue;
+        } else {
+            if (found >= 0) {
+                log_warn("Tag '%s' already present on issue %s", t, id);
+                goto defer;
+            }
+            da_append(&owned, sv_from_cstr(t));
         }
 
-        if (found >= 0) {
-            log_warn("Tag '%s' already present on issue %s", t, id);
-            goto defer;
-        }
-
-        da_append(&owned, sv_from_cstr(t));
+        if (!first) sb_append(&logtags, ',');
+        sb_append_cstr(&logtags, t);
+        first = false;
     }
 
     for (size_t i = 0; i < owned.count; i++) {
@@ -77,6 +81,19 @@ int cmd_tag(int argc, char **argv)
         log_error("Failed to save issue %s", id);
         goto defer;
     }
+    sb_append_null(&logtags);
+
+    Config cfg = {0};
+    config_load(&cfg);
+    const char *author = config_get(&cfg, "author");
+    if (!author) author = USERNAME_ENV;
+    config_free(&cfg);
+
+    if (logtags.count > 1)
+        TLOG(TATRLOG_TAG, id, {
+            tatrlog_field(&__log, "author", author);
+            tatrlog_field(&__log, *remove ? "remove" : "add", logtags.items);
+        });
 
     log_info("Updated tags for issue %s", id);
     result = 0;
@@ -84,6 +101,7 @@ int cmd_tag(int argc, char **argv)
 defer:
     sb_free(sb);
     da_free(owned);
+    da_free(logtags);
     issue_free(&iss);
     temp_rewind(tmark);
 

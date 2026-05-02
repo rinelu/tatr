@@ -10,8 +10,11 @@
 #include "global.h"
 #include "clag.h"
 #include "issue.h"
-#include "ui.h"
 #include "temp.h"
+#include "ui.h"
+#include "log.h"
+#include "config.h"
+#include "tatrlog.h"
 
 inline static bool require_repo(void)
 {
@@ -40,7 +43,8 @@ int cmd_attachls(int argc, char **argv);
 int cmd_detach  (int argc, char **argv);
 int cmd_status  (int argc, char **argv);
 int cmd_export  (int argc, char **argv);
-
+int cmd_log(int argc, char **argv);
+int cmd_config(int argc, char **argv);
 typedef int (*CmdFn)(int argc, char **argv);
 
 typedef struct {
@@ -55,6 +59,7 @@ static const Command commands[] = {
     { "help",     "Print help for tatr or a specific command",              cmd_help     },
     { "init",     "Initialize a .tatr directory in the current folder",     cmd_init     },
     { "status",   "Show repository status",                                 cmd_status   },
+    { "config",   "Get and set repository or global options",               cmd_config   },
 
     { "Issues", NULL, NULL },
     { "new",      "Create a new issue",                                     cmd_new      },
@@ -65,6 +70,7 @@ static const Command commands[] = {
     { "close",    "Mark an issue as closed",                                cmd_close    },
     { "reopen",   "Reopen a closed issue",                                  cmd_reopen   },
     { "export",   "Export an issue to Markdown or JSON",                    cmd_export   },
+    { "log",      "Show history of changes",                                cmd_log      },
 
     { "Organization", NULL, NULL },
     { "search",   "Full-text search across all issue files",                cmd_search   },

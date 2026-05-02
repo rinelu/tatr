@@ -28,11 +28,6 @@
      // console gets colour, file gets plain text
      log_init(.file = f);
    ```
-  
-   Macro Interface
-     LOG_NO_COLOR      — strip all ANSI sequences at compile time
-     LOG_GLOBAL        — share log__g across TUs (see above)
-     LOG_IMPL_GLOBAL   — provide the definition of log__g (one TU only)
  */
 
 #ifndef LOG_H_
@@ -69,60 +64,60 @@
 #endif
 
 #ifdef LOG_NO_COLOR
-#    define A__RESET        ""
-#    define A__BOLD         ""
-#    define A__DIM          ""
-#    define A__ITALIC       ""
-#    define A__UNDERLINE    ""
-#    define A__RED          ""
-#    define A__GREEN        ""
-#    define A__YELLOW       ""
-#    define A__BLUE         ""
-#    define A__MAGENTA      ""
-#    define A__CYAN         ""
-#    define A__WHITE        ""
-#    define A__BRED         ""
-#    define A__BGREEN       ""
-#    define A__BYELLOW      ""
-#    define A__BBLUE        ""
-#    define A__BCYAN        ""
-#    define A__BOLD_RED     ""
-#    define A__BOLD_BRED    ""
-#    define A__BOLD_GREEN   ""
-#    define A__BOLD_YELLOW  ""
-#    define A__BOLD_BLUE    ""
-#    define A__BOLD_MAGENTA ""
-#    define A__BOLD_CYAN    ""
-#    define A__BOLD_WHITE   ""
-#    define A__DIM_WHITE    ""
+#    define A_RESET        ""
+#    define A_BOLD         ""
+#    define A_DIM          ""
+#    define A_ITALIC       ""
+#    define A_UNDERLINE    ""
+#    define A_RED          ""
+#    define A_GREEN        ""
+#    define A_YELLOW       ""
+#    define A_BLUE         ""
+#    define A_MAGENTA      ""
+#    define A_CYAN         ""
+#    define A_WHITE        ""
+#    define A_BRED         ""
+#    define A_BGREEN       ""
+#    define A_BYELLOW      ""
+#    define A_BBLUE        ""
+#    define A_BCYAN        ""
+#    define A_BOLD_RED     ""
+#    define A_BOLD_BRED    ""
+#    define A_BOLD_GREEN   ""
+#    define A_BOLD_YELLOW  ""
+#    define A_BOLD_BLUE    ""
+#    define A_BOLD_MAGENTA ""
+#    define A_BOLD_CYAN    ""
+#    define A_BOLD_WHITE   ""
+#    define A_DIM_WHITE    ""
 #else
-#    define A__CSI "\x1b["
-#    define A__RESET        A__CSI "0m"
-#    define A__BOLD         A__CSI "1m"
-#    define A__DIM          A__CSI "2m"
-#    define A__ITALIC       A__CSI "3m"
-#    define A__UNDERLINE    A__CSI "4m"
-#    define A__RED          A__CSI "31m"
-#    define A__GREEN        A__CSI "32m"
-#    define A__YELLOW       A__CSI "33m"
-#    define A__BLUE         A__CSI "34m"
-#    define A__MAGENTA      A__CSI "35m"
-#    define A__CYAN         A__CSI "36m"
-#    define A__WHITE        A__CSI "37m"
-#    define A__BRED         A__CSI "91m"
-#    define A__BGREEN       A__CSI "92m"
-#    define A__BYELLOW      A__CSI "93m"
-#    define A__BBLUE        A__CSI "94m"
-#    define A__BCYAN        A__CSI "96m"
-#    define A__BOLD_RED     A__BOLD A__RED
-#    define A__BOLD_BRED    A__BOLD A__BRED
-#    define A__BOLD_GREEN   A__BOLD A__GREEN
-#    define A__BOLD_YELLOW  A__BOLD A__YELLOW
-#    define A__BOLD_BLUE    A__BOLD A__BLUE
-#    define A__BOLD_MAGENTA A__BOLD A__MAGENTA
-#    define A__BOLD_CYAN    A__BOLD A__CYAN
-#    define A__BOLD_WHITE   A__BOLD A__WHITE
-#    define A__DIM_WHITE    A__DIM  A__WHITE
+#    define A_CSI "\x1b["
+#    define A_RESET        A_CSI "0m"
+#    define A_BOLD         A_CSI "1m"
+#    define A_DIM          A_CSI "2m"
+#    define A_ITALIC       A_CSI "3m"
+#    define A_UNDERLINE    A_CSI "4m"
+#    define A_RED          A_CSI "31m"
+#    define A_GREEN        A_CSI "32m"
+#    define A_YELLOW       A_CSI "33m"
+#    define A_BLUE         A_CSI "34m"
+#    define A_MAGENTA      A_CSI "35m"
+#    define A_CYAN         A_CSI "36m"
+#    define A_WHITE        A_CSI "37m"
+#    define A_BRED         A_CSI "91m"
+#    define A_BGREEN       A_CSI "92m"
+#    define A_BYELLOW      A_CSI "93m"
+#    define A_BBLUE        A_CSI "94m"
+#    define A_BCYAN        A_CSI "96m"
+#    define A_BOLD_RED     A_BOLD A_RED
+#    define A_BOLD_BRED    A_BOLD A_BRED
+#    define A_BOLD_GREEN   A_BOLD A_GREEN
+#    define A_BOLD_YELLOW  A_BOLD A_YELLOW
+#    define A_BOLD_BLUE    A_BOLD A_BLUE
+#    define A_BOLD_MAGENTA A_BOLD A_MAGENTA
+#    define A_BOLD_CYAN    A_BOLD A_CYAN
+#    define A_BOLD_WHITE   A_BOLD A_WHITE
+#    define A_DIM_WHITE    A_DIM  A_WHITE
 #endif // LOG_NO_COLOR
 
 #ifndef LOGDEF
@@ -162,14 +157,10 @@ typedef struct {
 
 } Log_Global;
 
-#ifndef LOG_GLOBAL
-static Log_Global log__g = {0};
-#else
-#  ifdef LOG_IMPLEMENTATION
+#ifdef LOG_IMPLEMENTATION
 Log_Global log__g = {0};
-#  else
+#else
 extern Log_Global log__g;
-#  endif
 #endif
 
 #define log_init(...) log__init((Log_Config){__VA_ARGS__})
@@ -281,13 +272,13 @@ static const char *log__level_color(Log_Level l)
     if (!log__g.color) return "";
     switch (l) {
         case LOG_NPRE:  return "";
-        case LOG_DEBUG: return A__DIM;
-        case LOG_INFO:  return A__BOLD_BLUE;
-        case LOG_WARN:  return A__BOLD_MAGENTA;
-        case LOG_ERROR: return A__BOLD_RED;
-        case LOG_FATAL: return A__BOLD_BRED;
-        case LOG_NOTE:  return A__BOLD_CYAN;
-        case LOG_HINT:  return A__BOLD_GREEN;
+        case LOG_DEBUG: return A_DIM;
+        case LOG_INFO:  return A_BOLD_BLUE;
+        case LOG_WARN:  return A_BOLD_MAGENTA;
+        case LOG_ERROR: return A_BOLD_RED;
+        case LOG_FATAL: return A_BOLD_BRED;
+        case LOG_NOTE:  return A_BOLD_CYAN;
+        case LOG_HINT:  return A_BOLD_GREEN;
     }
     return "";
 #endif
@@ -353,19 +344,19 @@ static void log__vlog(Log_Level lvl, const char *file, int line, const char *fmt
     if (log__g.show_time) {
         char t[32];
         log__time(t, sizeof(t));
-        LOG__APPEND("%s[%s]%s ", log_seq(A__DIM_WHITE), t, log_seq(A__RESET));
+        LOG__APPEND("%s[%s]%s ", log_seq(A_DIM_WHITE), t, log_seq(A_RESET));
     }
 
     if (lvl != LOG_NPRE) {
         LOG__APPEND("%s%s%s ",
             log_seq(log__level_color(lvl)),
             log__level_str(lvl),
-            log_seq(A__RESET));
+            log_seq(A_RESET));
     }
 
     if (log__g.show_file && file) {
         LOG__APPEND("%s%s:%d:%s ",
-            log_seq(A__DIM_WHITE), file, line, log_seq(A__RESET));
+            log_seq(A_DIM_WHITE), file, line, log_seq(A_RESET));
     }
 
     {
@@ -403,7 +394,7 @@ LOGDEF bool log_confirm(const char *fmt, ...)
     vprintf(fmt, ap);
     va_end(ap);
 
-    printf(" %s[y/N]%s ", log_seq(A__BOLD_WHITE), log_seq(A__RESET));
+    printf(" %s[y/N]%s ", log_seq(A_BOLD_WHITE), log_seq(A_RESET));
     fflush(stdout);
 
     char buf[16];
@@ -412,40 +403,6 @@ LOGDEF bool log_confirm(const char *fmt, ...)
 }
 
 #endif // LOG_IMPLEMENTATION
-
-// public color-sequence macros
-// These honor the runtime color flag via log_seq().
-#define A_CSI        log_seq(A__CSI)
-
-#define A_RESET      log_seq(A__RESET)
-#define A_BOLD       log_seq(A__BOLD)
-#define A_DIM        log_seq(A__DIM)
-#define A_ITALIC     log_seq(A__ITALIC)
-#define A_UNDERLINE  log_seq(A__UNDERLINE)
-
-#define A_RED        log_seq(A__RED)
-#define A_GREEN      log_seq(A__GREEN)
-#define A_YELLOW     log_seq(A__YELLOW)
-#define A_BLUE       log_seq(A__BLUE)
-#define A_MAGENTA    log_seq(A__MAGENTA)
-#define A_CYAN       log_seq(A__CYAN)
-#define A_WHITE      log_seq(A__WHITE)
-
-#define A_BRED       log_seq(A__BRED)
-#define A_BGREEN     log_seq(A__BGREEN)
-#define A_BYELLOW    log_seq(A__BYELLOW)
-#define A_BBLUE      log_seq(A__BBLUE)
-#define A_BCYAN      log_seq(A__BCYAN)
-
-#define A_BOLD_RED     log_seq(A__BOLD_RED)
-#define A_BOLD_BRED    log_seq(A__BOLD_BRED)
-#define A_BOLD_GREEN   log_seq(A__BOLD_GREEN)
-#define A_BOLD_YELLOW  log_seq(A__BOLD_YELLOW)
-#define A_BOLD_BLUE    log_seq(A__BOLD_BLUE)
-#define A_BOLD_MAGENTA log_seq(A__BOLD_MAGENTA)
-#define A_BOLD_CYAN    log_seq(A__BOLD_CYAN)
-#define A_BOLD_WHITE   log_seq(A__BOLD_WHITE)
-#define A_DIM_WHITE    log_seq(A__DIM_WHITE)
 
 #endif // LOG_H_
 

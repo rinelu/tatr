@@ -201,7 +201,7 @@ static void test_edit_unknown_field_rejected(void)
     snprintf(args, sizeof(args), "edit %s --field flavor --value vanilla", issue_open);
     TatrResult r = tatr(args);
     ASSERT_CMD_FAIL(r);
-    ASSERT_OUT_CONTAINS(r, "unknown field");
+    ASSERT_OUT_CONTAINS(r, "invalid value");
 }
 
 static void test_edit_no_change_warns(void)

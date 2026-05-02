@@ -9,11 +9,12 @@ int cmd_attach(int argc, char **argv)
         return 1;
     }
 
+    if (!require_repo()) return 1;
+
     if (clag_rest_argc() < 2) {
-        log_error("Usage: tatr attach <id> <file> [<file> ...]");
+        clag_print_help(stderr);
         return 1;
     }
-    if (!require_repo()) return 1;
 
     const char *id = clag_rest_argv()[0];
 
@@ -45,15 +46,10 @@ int cmd_attach(int argc, char **argv)
             sb_free(dst);
             goto defer;
         }
-
         sb_append_null(&dst);
 
-        String_Builder expected = {0};
-        sb_append(&expected, '/');
-        sb_append_cstr(&expected, base);
-        sb_append_null(&expected);
-        bool renamed = !sv_ends_with_cstr(sb_to_sv(dst), expected.items);
-        sb_free(expected);
+        const char *dst_base = fs_path_name(dst.items);
+        bool renamed = strcmp(base, dst_base) != 0;
 
         if (!fs_copy_file(src, dst.items)) {
             log_error("Cannot copy '%s'", src);
@@ -61,8 +57,12 @@ int cmd_attach(int argc, char **argv)
             goto defer;
         }
 
+        TLOG(TATRLOG_ATTACH, id, {
+            tatrlog_field(&__log, "file", base);
+        });
+
         if (renamed)
-            log_info("Attached %s -> %s (renamed, conflict resolved)", base, dst.items);
+            log_info("Attached %s -> %s (renamed, conflict resolved)", base, dst_base);
         else
             log_info("Attached %s", base);
 

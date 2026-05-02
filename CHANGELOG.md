@@ -15,6 +15,193 @@ We follow https://semver.org/:
 
 # Changelogs
 
+## 2.0.0 (2026-04-18) (ON-GOING)
+
+- New `.tatr/log` file introduced for history tracking
+- Add persistent event log system (`tatrlog`)
+- Add new `log` command to inspect history (filter by id, event, date, limit)
+- Track all mutating actions: create, edit, close, reopen, delete, tag, comment, attach, detach
+- Add structured and colorized log output with relative and full timestamps
+- Add reusable timestamp formatting utilities
+- Add logging hooks for all operations
+- Standardize ISO and relative time formatting across commands
+- Replace raw day counts in `status` command with human-readable relative time (e.g. "2d ago")
+- Simplify and standardize `search` result output formatting
+
+- Add full `$EDITOR` integration:
+  - Edit entire issue (`tatr edit <id>`)
+  - Edit specific fields via editor (`--field`)
+  - Interactive issue creation when no fields provided
+  - Optional interactive body editing (`-i`)
+
+- Add configuration system (`config.*`):
+  - Support local (`.tatr/config`) and global (`~/.config/tatr/config`) scopes
+  - Implement layered config resolution (local overrides global, fallback to defaults)
+  - Add typed config key definitions with descriptions and defaults
+  - Add helper APIs: `config_get`, `config_get_or_default`, `config_set`, `config_unset`
+
+- Add `config` command:
+  - Get/set configuration values (`tatr config <key> [value]`)
+  - Add `--local` and `--global` scope selection
+  - Add `--list` to display stored and resolved configuration values
+  - Add `--unset` to remove keys
+  - Add `--edit` to open config file in `$EDITOR`
+  - Add `--keys` to list all valid config keys with descriptions and defaults
+
+- Add config file editing support:
+  - Auto-create config file with documented template on first edit
+  - Include inline comments describing all available keys and defaults
+  - Respect `$EDITOR` and configured `default_editor`
+
+- Add default configuration keys:
+  - `author`
+  - `default_status`
+  - `default_priority`
+  - `default_editor`
+  - `log.limit`
+  - `list.show_closed`
+  - `list.limit`
+
+- Add cross-platform config path resolution:
+  - Support XDG base directory (`$XDG_CONFIG_HOME`)
+  - Fallback to `$HOME/.config`
+  - Windows support via `%APPDATA%`
+
+- Add MIME detection system (`mime.*`):
+  - Detect file types using magic numbers and signatures
+  - Fallback to extension-based detection
+  - Heuristic detection for text vs binary content
+  - Helpers for identifying text and image types
+
+- Add codec utilities (`codec.*`):
+  - Implement base64 encoding and decoding
+  - Enable embedding binary data in export formats
+
+- Add filesystem utilities:
+  - Add `fs_file_extension` helper
+  - Improve `fs_unique_path` to ensure proper null-termination and safe path building
+
+- Add new modules:
+  - `editor.*` (external editor integration)
+  - `tatrlog.*` (logging system)
+  - `mime.*` (MIME type detection)
+  - `codec.*` (encoding utilities)
+
+- Improve configuration UX:
+  - Show source of each value (local/global/default) in resolved view
+  - Highlight unknown keys found in config files
+  - Provide helpful error messages and hints for invalid keys
+
+- Improve file handling for config:
+  - Preserve comments and formatting when modifying config files
+  - Ensure safe directory creation for config paths
+  - Support idempotent updates and clean key replacement
+
+- Redesign `new` command:
+  - Remove required `--title`
+  - Support full interactive mode
+  - Support hybrid CLI + editor workflows
+  - Improve issue initialization flow
+
+- Improve `edit` command:
+  - Support full document editing
+  - Support editor-based field editing
+  - Add direct field updates with change logging
+  - Add `body` as editable field
+
+- Improve `delete` and `detach` command:
+  - Support deleting multiple issues in a single invocation
+  - No prompt by default
+  - Add `--interactive` for interactive confirmation per issue
+  - Make `--force` ignore missing issues and suppress errors
+  - Continue processing remaining IDs on failure
+  - Return non-zero if any deletion fails
+  - Ensure logs only record successful deletions
+
+- Improve `attach` command:
+  - Detect filename conflicts and auto-rename safely
+  - Improve rename detection using resolved destination path
+  - Log actual stored attachment path instead of original filename
+  - Improve user-facing messages for renamed attachments
+
+- Improve `list` command:
+  - Redesign output formatting with aligned columns
+  - Add dynamic title wrapping based on terminal width
+  - Improve readability with consistent spacing and colors
+
+- Improve tag command:
+  - Better add/remove handling
+  - Log tag changes
+
+- Improve export system:
+  - Add new `--embed` option to include attachment content
+  - Add new `--compress` option to control attachment encoding behavior
+  - Simplify JSON formatting flags (remove `--pretty`, keep `--minify`)
+  - Default to pretty JSON output unless `--minify` is used
+
+- Enhance JSON export:
+  - Add consistent indentation and newline handling
+  - Export comments as structured objects (`date`, `author`, `body`)
+  - Export tags as formatted arrays
+  - Add attachment embedding with:
+    - MIME type detection
+    - Automatic encoding selection (`utf-8` or `base64`)
+    - Inline binary data support
+
+- Enhance Markdown export:
+  - Add optional embedded attachments via `--embed`
+  - Render images inline using base64 data URLs
+  - Render text attachments as fenced code blocks with language detection
+  - Wrap embedded content in collapsible `<details>` blocks
+
+- Refactor UI layer:
+  - Simplify UI into reusable formatting utilities
+  - Remove redundant UI state and helpers
+  - Centralize output formatting logic
+
+- Improve cross-platform support
+  - Enforce C11 standard
+  - Add Windows filesystem + temp file handling
+  - Add Windows-compatible timestamp (`localtime_s`)
+  - Clean up platform-specific includes and randomness handling
+
+- Minor improvements:
+  - Add `sv_empty`
+  - Add `sb_append_char`
+  - Improve formatting in `clag` choices output
+  - Cleanup redundant option printing
+  - Various consistency fixes and refactors
+
+### BREAKING CHANGES
+
+- Issue creation flow changed (interactive by default when no fields provided)
+- Editing behavior changed (can open full editor instead of requiring flags)
+- Internal issue raw format handling updated (header/body composition)
+
+- Export behavior changed:
+  - Attachments may now be embedded directly in output when using `--embed`
+  - JSON attachment format changed from filename list to structured objects when embedded
+  - JSON formatting defaults to pretty output unless `--minify` is specified
+
+- Detach command interface changed:
+  - Now requires `<id> <file>...` instead of single filename
+  - `--yes` flag removed and replaced with `--interactive` / `--force`
+
+- Internal issue model updated:
+  - `status` and `priority` fields changed from `String_View` to enums
+  - All internal comparisons now use enum values instead of string matching
+  - Introduced conversion layer between string and enum
+  - Invalid values are detected explicitly instead of being treated as raw strings
+
+- UI module API significantly reduced:
+  - Removed `ui_print_*` functions and initialization (`ui_init`)
+  - Output rendering is now handled directly in commands
+  - `log_init()` must be explicitly called in `main`
+
+- Internal structure refactor:
+  - UI no longer owns rendering logic for issues or commands
+  - Commands are now responsible for their own output formatting
+
 ## 1.5.0 (2026-04-16)
 
 - Add proper checkpoint system using `Temp_Checkpoint` (block + offset)

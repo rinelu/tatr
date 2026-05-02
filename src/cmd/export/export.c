@@ -34,19 +34,18 @@ void export_list_all(void)
 
 int cmd_export(int argc, char **argv)
 {
-    char **format       = clag_str("format",       'f',        "markdown", "Export format");
-    char **output       = clag_str ("output",      'o', NULL,  "Write to file instead of stdout");
-    bool  *ls_format    = clag_bool("list-format", 'L', NULL,  "List all supported format.");
-    bool  *pretty       = clag_bool("pretty",      'p', true,  "Pretty JSON output");
-    bool  *minify       = clag_bool("minify",      'm', false, "Minified JSON output");
+    char **format    = clag_str("format",       'f', "markdown", "Export format");
+    char **output    = clag_str ("output",      'o', NULL,        "Write to file instead of stdout");
+    bool  *ls_format = clag_bool("list-format", 'L', false,       "List all supported format.");
+    bool  *minify    = clag_bool("minify",      'm', false,       "Minified JSON output");
+    bool  *embed     = clag_bool("embed",       'e', false,       "Embed attachments directly into output");
+    bool  *compress  = clag_bool("compress",    'c', false,       "Compress embedded attachments (e.g. base64 for binary)");
 
     clag_choices("format", "markdown", "json");
     clag_usage("<id> [options]");
-    clag_mutex("pretty", "minify");
 
     if (!clag_parse(argc, argv)) {
         clag_print_error(stderr);
-        clag_print_options(stderr);
         return 1;
     }
 
@@ -55,13 +54,13 @@ int cmd_export(int argc, char **argv)
         return 0;
     }
 
+    if (!require_repo()) return 1;
+
     if (clag_rest_argc() < 1) {
         log_error("missing issue ID");
         log_msg("usage: tatr export <id> [--format=] [--output <file>]");
         return 1;
     }
-
-    if (!require_repo()) return 1;
 
     const char *id = clag_rest_argv()[0];
 
@@ -98,8 +97,9 @@ int cmd_export(int argc, char **argv)
     }
 
     Export_Opts opts = {
-        .pretty = *pretty && !*minify,
-        .embed  = false,
+        .pretty   = !*minify,
+        .embed    = *embed,
+        .compress = *compress,
     };
 
     exp->render(&iss, out, &opts);

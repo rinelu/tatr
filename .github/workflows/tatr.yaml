@@ -4,6 +4,7 @@ on:
   push:
     branches: [ master ]
   pull_request:
+  workflow_dispatch:
 
 jobs:
   linux:
@@ -97,9 +98,6 @@ jobs:
 
   windows-msvc:
     runs-on: windows-latest
-    strategy:
-      matrix:
-        mode: ["", "/Zi"]
 
     steps:
       - uses: actions/checkout@v4
@@ -115,7 +113,7 @@ jobs:
           cmake .. -DCMAKE_BUILD_TYPE=Release
           cmake --build . --config Release
 
-          tests\run_tests.exe
+          ctest -C Release --output-on-failure
 
 
   windows-mingw:

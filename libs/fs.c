@@ -2,8 +2,6 @@
 #include "temp.h"
 
 #include <assert.h>
-#include <dirent.h>
-#include <fcntl.h>
 #include <stdarg.h>
 #include <stddef.h>
 #include <errno.h>
@@ -11,12 +9,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifdef _WIN32
+#include <windows.h>
+#include <direct.h>
+#include <io.h>
+#else
+#include <dirent.h>
+#include <fcntl.h>
 #include <sys/stat.h>
 #include <unistd.h>
-
-#ifdef FS_SILENT
-#define printf(...) ((void)0)
 #endif
+
+#define printf(...) ((void)0)
 
 #ifdef _WIN32
 #define FS_SEP "\\"
@@ -62,6 +67,21 @@ const char *fs_path_name(const char *path)
 #endif // _WIN32
 }
 
+const char *fs_file_extension(const char *path)
+{
+    if (!path) return NULL;
+
+    const char *name = fs_path_name(path);
+    const char *dot = strrchr(name, '.');
+
+    // No dot or dot is first char (hidden files)
+    if (!dot || dot == name) return NULL;
+    // Dot is last character ("file.")
+    if (*(dot + 1) == '\0') return NULL;
+
+    return dot + 1;
+}
+
 bool fs_unique_path(const char *dir, const char *filename, String_Builder *out)
 {
     String_Builder base = {0};
@@ -76,7 +96,10 @@ bool fs_unique_path(const char *dir, const char *filename, String_Builder *out)
     }
 
     // First try original name
-    sb_append_cstr(out, fs_path(dir, filename));
+    sb_append_cstr(out, dir);
+    sb_append_cstr(out, FS_SEP);
+    sb_append_cstr(out, filename);
+    sb_append_null(out);
     if (!fs_file_exists(out->items)) {
         sb_free(base);
         sb_free(ext);
@@ -91,6 +114,7 @@ bool fs_unique_path(const char *dir, const char *filename, String_Builder *out)
         sb_append_cstr(out, FS_SEP);
 
         sb_appendf(out, SV_Fmt"-%d"SV_Fmt, SB_Arg(base), i, SB_Arg(ext));
+        sb_append_null(out);
 
         if (!fs_file_exists(out->items)) {
             sb_free(base);
