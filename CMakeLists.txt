@@ -177,5 +177,4 @@ message(STATUS "UBSAN:      ${TATR_ENABLE_UBSAN}")
 message(STATUS "System:     ${CMAKE_SYSTEM_NAME}")
 message(STATUS "Compiler:   ${CMAKE_C_COMPILER_ID}")
 
-enable_testing()
 add_subdirectory(tests)

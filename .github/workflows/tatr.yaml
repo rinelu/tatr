@@ -111,10 +111,9 @@ jobs:
           cd build
 
           cmake .. -DCMAKE_BUILD_TYPE=Release
-          cmake --build . --config Release --target tatr
-          cmake --build . --config Release --target run_tests
+          cmake --build . --config Release
 
-          tests\Release\run_tests.exe
+          ctest -C Release --output-on-failure
 
 
   windows-mingw:
