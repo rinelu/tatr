@@ -98,9 +98,6 @@ jobs:
 
   windows-msvc:
     runs-on: windows-latest
-    strategy:
-      matrix:
-        mode: ["", "/Zi"]
 
     steps:
       - uses: actions/checkout@v4
