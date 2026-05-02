@@ -116,7 +116,7 @@ jobs:
           cmake .. -DCMAKE_BUILD_TYPE=Release
           cmake --build . --config Release
 
-          tests\run_tests.exe
+          tests\Release\run_tests.exe
 
 
   windows-mingw:

@@ -112,6 +112,12 @@ if(TATR_ENABLE_WARNINGS)
     endif()
 endif()
 
+if(MSVC)
+    target_compile_definitions(tatr      PRIVATE _CRT_SECURE_NO_WARNINGS _CRT_NONSTDC_NO_WARNINGS)
+    target_compile_definitions(tatrlib   PRIVATE _CRT_SECURE_NO_WARNINGS _CRT_NONSTDC_NO_WARNINGS)
+    target_compile_definitions(run_tests PRIVATE _CRT_SECURE_NO_WARNINGS _CRT_NONSTDC_NO_WARNINGS)
+endif()
+
 # ---- Sanitizers (GCC/Clang only) ----
 
 set(TATR_SANITIZERS "")
@@ -126,15 +132,22 @@ endif()
 
 if(TATR_SANITIZERS AND NOT MSVC)
     target_compile_options(tatr PRIVATE ${TATR_SANITIZERS})
-    target_link_options(tatr PRIVATE ${TATR_SANITIZERS})
+    target_link_options(tatr    PRIVATE ${TATR_SANITIZERS})
 endif()
 
 # ---- Build type flags ----
 
-target_compile_options(tatr PRIVATE
-    $<$<CONFIG:Debug>:-O0 -g>
-    $<$<CONFIG:Release>:-O3 -DNDEBUG>
-)
+if(MSVC)
+    target_compile_options(tatr PRIVATE
+        $<$<CONFIG:Debug>:/Od>
+        $<$<CONFIG:Release>:/O2 /DNDEBUG>
+    )
+else()
+    target_compile_options(tatr PRIVATE
+        $<$<CONFIG:Debug>:-O0 -g>
+        $<$<CONFIG:Release>:-O2 -DNDEBUG>
+    )
+endif()
 
 # ---- Platform-specific config ----
 

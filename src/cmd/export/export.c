@@ -34,12 +34,12 @@ void export_list_all(void)
 
 int cmd_export(int argc, char **argv)
 {
-    char **format    = clag_str("format",       'f',        "markdown", "Export format");
-    char **output    = clag_str ("output",      'o', NULL,  "Write to file instead of stdout");
-    bool  *ls_format = clag_bool("list-format", 'L', NULL,  "List all supported format.");
-    bool  *minify    = clag_bool("minify",      'm', false, "Minified JSON output");
-    bool  *embed     = clag_bool("embed",       'e', false, "");
-    bool  *compress  = clag_bool("compress",    'c', false, "");
+    char **format    = clag_str("format",       'f', "markdown", "Export format");
+    char **output    = clag_str ("output",      'o', NULL,        "Write to file instead of stdout");
+    bool  *ls_format = clag_bool("list-format", 'L', false,       "List all supported format.");
+    bool  *minify    = clag_bool("minify",      'm', false,       "Minified JSON output");
+    bool  *embed     = clag_bool("embed",       'e', false,       "Embed attachments directly into output");
+    bool  *compress  = clag_bool("compress",    'c', false,       "Compress embedded attachments (e.g. base64 for binary)");
 
     clag_choices("format", "markdown", "json");
     clag_usage("<id> [options]");
