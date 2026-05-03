@@ -40,7 +40,7 @@ We follow https://semver.org/:
   - Ensure config directory exists before writing global config
   - Reduce hardcoded defaults in favor of configuration-driven behavior
 
-## 2.0.0 (2026-04-18) (ON-GOING)
+## 2.0.0 (2026-04-18)
 
 - New `.tatr/log` file introduced for history tracking
 - Add persistent event log system (`tatrlog`)
