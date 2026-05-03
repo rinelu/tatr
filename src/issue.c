@@ -2,6 +2,7 @@
 #include "astring.h"
 
 #include "fs.h"
+#include "global.h"
 #include "log.h"
 
 #include <stdio.h>
@@ -228,7 +229,7 @@ bool issue_load(const char *id, Issue *out)
         return false;
     }
     
-    const char *dir_path = fs_path(".tatr/issues", id);
+    const char *dir_path = fs_path(TATR_ISSUES_PATH, id);
     const char *path = fs_path(dir_path, "issue.tatr");
     out->attach_path = fs_path(dir_path, "attachments");
     out->path  = path;

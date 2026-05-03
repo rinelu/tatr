@@ -18,7 +18,7 @@
 
 inline static bool require_repo(void)
 {
-    if (!fs_file_exists(".tatr/issues")) {
+    if (g_repo_root[0] == '\0') {
         log_error("tatr: not a tatr repository (run `tatr init` first)");
         return false;
     }

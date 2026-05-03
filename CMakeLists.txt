@@ -33,6 +33,7 @@ set(TATR_SRC
     src/codec.c
     src/mime.c
     src/config.c
+    src/global.c
 )
 
 file(GLOB TATR_EXPORT_SRC

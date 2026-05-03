@@ -1,4 +1,5 @@
 #include "cmd.h"
+#include "global.h"
 
 int cmd_init(int argc, char **argv)
 {
@@ -10,21 +11,21 @@ int cmd_init(int argc, char **argv)
         return 1;
     }
 
-    if (fs_file_exists(".tatr") && !*force) {
+    if (fs_file_exists(TATR_DIR_PATH) && !*force) {
         log_error("tatr: .tatr already exists (use --force or -f to reinitialize)");
         return 1;
     }
 
-    fs_mkdir(".tatr");
-    if (!fs_mkdir_force(".tatr/issues", force)) {
+    fs_mkdir(TATR_DIR_PATH);
+    if (!fs_mkdir_force(TATR_ISSUES_PATH, force)) {
         log_error("tatr: cannot create .tatr/issues");
         return 1;
     }
 
-    if (!fs_file_exists(".tatr/config") || *force) {
+    if (!fs_file_exists(TATR_CONFIG_PATH) || *force) {
         String_Builder cfg = {0};
         sb_append_cstr(&cfg, "# tatr configuration\n");
-        bool ok = fs_write_file(".tatr/config", cfg.items, cfg.count);
+        bool ok = fs_write_file(TATR_CONFIG_PATH, cfg.items, cfg.count);
 
         sb_free(cfg);
 
@@ -34,7 +35,7 @@ int cmd_init(int argc, char **argv)
         }
     }
 
-    fs_write_file(TATRLOG_PATH, "", 0);
+    fs_write_file(TATR_LOG_PATH, "", 0);
     log_msg("Initialized empty tatr repository in .tatr/");
     return 0;
 }

@@ -1,4 +1,5 @@
 #include "cmd.h"
+#include "global.h"
 #include "issue.h"
 #include "temp.h"
 #include "ui.h"
@@ -105,7 +106,7 @@ int cmd_status(int argc, char **argv)
 
 
     File_Paths ids = {0};
-    if (!fs_read_dir(".tatr/issues", &ids)) {
+    if (!fs_read_dir(TATR_ISSUES_PATH, &ids)) {
         log_error("cannot read issues directory");
         da_free(ids);
         return 1;

@@ -23,12 +23,6 @@
 
 #define printf(...) ((void)0)
 
-#ifdef _WIN32
-#define FS_SEP "\\"
-#else
-#define FS_SEP "/"
-#endif
-
 const char *fs__path(const char *first, ...)
 {
     String_Builder sb = {0};

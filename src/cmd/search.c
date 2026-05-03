@@ -1,4 +1,5 @@
 #include "cmd.h"
+#include "global.h"
 
 typedef struct {
     String_View *items;
@@ -36,7 +37,7 @@ int cmd_search(int argc, char **argv)
         da_append(&tokens, sv_from_cstr(clag_rest_argv()[i]));
 
     File_Paths issues = {0};
-    if (!fs_read_dir(".tatr/issues", &issues)) {
+    if (!fs_read_dir(TATR_ISSUES_PATH, &issues)) {
         log_error("Cannot read issues directory");
         goto defer;
     }

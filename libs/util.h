@@ -112,4 +112,12 @@ inline static void human_timestamp(time_t t, char *buf, size_t size)
     strftime(buf, size, "%a %b %e %H:%M:%S %Y %z", &tm);
 }
 
+inline static bool parse_bool(const char *str)
+{
+    if (strcmp(str, "true") == 0 || strcmp(str, "1") == 0) {
+        return true;
+    }
+    return false;
+}
+
 #endif // LIB_UTIL_H_

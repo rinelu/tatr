@@ -99,7 +99,7 @@ bool tatrlog_commit(TatrLog_Builder *b)
     sb_append_cstr(&b->sb, "\n");
     sb_append_null(&b->sb);
 
-    bool ok = fs_append_file(TATRLOG_PATH, b->sb.items);
+    bool ok = fs_append_file(TATR_LOG_PATH, b->sb.items);
     tatrlog_discard(b);
     return ok;
 }
@@ -187,7 +187,7 @@ bool tatrlog_load(TatrLog_Entries *out)
     memset(out, 0, sizeof(*out));
 
     String_Builder raw = {0};
-    if (!fs_read_file(TATRLOG_PATH, &raw)) {
+    if (!fs_read_file(TATR_LOG_PATH, &raw)) {
         sb_free(raw);
         return false;
     }
