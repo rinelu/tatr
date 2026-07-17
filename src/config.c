@@ -2,6 +2,7 @@
 #include "astring.h"
 #include "array.h"
 #include "fs.h"
+#include "global.h"
 #include "temp.h"
 
 #include <assert.h>
@@ -17,7 +18,7 @@
 #endif
 
 const Config_Key_Def CONFIG_KEYS[] = {
-    { "author",           "Default author name for comments and log entries", NULL      },
+    { "author",           "Default author name for comments and log entries", "unknown" },
     { "default_status",   "Default status for new issues",                    "open"    },
     { "default_priority", "Default priority for new issues",                  "normal"  },
     { "default_editor",   "Editor to use instead of $VISUAL/$EDITOR",         NULL      },
@@ -101,7 +102,7 @@ static void store_free(Config_Store *s)
 void config_load(Config *c)
 {
     memset(c, 0, sizeof(*c));
-    store_load(&c->local,  CONFIG_LOCAL_PATH);
+    store_load(&c->local,  TATR_CONFIG_PATH);
     store_load(&c->global, config_global_path());
 }
 
@@ -238,5 +239,53 @@ bool config_unset(const char *path, const char *key)
 
     sb_free(raw);
     sb_free(out);
+    return ok;
+}
+
+bool config_write_global_default(void)
+{
+    const char *path   = config_global_path();
+    String_Builder tmp = {0};
+    if (fs_read_file(path, &tmp)) {
+        sb_free(tmp);
+        return true;
+    }
+    sb_free(tmp);
+
+    // Ensure parent directory exists
+    {
+        char *p = strdup(path);
+        if (!p) return false;
+
+        char *slash = strrchr(p, '/');
+#ifdef _WIN32
+        char *bslash = strrchr(p, '\\');
+        if (bslash > slash) slash = bslash;
+#endif
+
+        if (slash && slash != p) {
+            *slash = '\0';
+            fs_mkdir_force(p, true);
+        }
+
+        free(p);
+    }
+
+    // Build default config
+    String_Builder out = {0};
+    for (size_t i = 0; i < CONFIG_KEYS_COUNT; i++) {
+        const Config_Key_Def *k = &CONFIG_KEYS[i];
+
+        if (k->default_val)
+            sb_appendf(&out, "%s: %s\n", k->key, k->default_val);
+        else
+            sb_appendf(&out, "# %s: %s\n", k->key, k->desc);
+    }
+
+    sb_append_null(&out);
+
+    bool ok = fs_write_file(path, out.items, out.count - 1);
+    sb_free(out);
+
     return ok;
 }

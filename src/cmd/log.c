@@ -104,14 +104,20 @@ static bool matches_author(const TatrLog_Entry *e, const char *a)
 
 int cmd_log(int argc, char **argv)
 {
-    uint64_t *limit   = clag_uint64("limit",   'n', 0,    "Max entries (0 = all)");
-    char    **since   = clag_str   ("since",    0,  NULL, "After  date (YYYY-MM-DD or ISO)");
-    char    **until   = clag_str   ("until",    0,  NULL, "Before date (YYYY-MM-DD or ISO)");
-    char    **id_flag = clag_str   ("id",       0,  NULL, "Filter to issue ID (prefix match)");
-    char    **event   = clag_str   ("event",   'e', NULL, "Filter by event type");
-    char    **author  = clag_str   ("author",  'a', NULL, "Filter by author");
-    bool     *oneline = clag_bool  ("oneline", 'l', false,"Compact one-line output");
-    bool     *reverse = clag_bool  ("reverse", 'r', false,"Oldest entries first");
+    Config cfg = {0};
+    config_load(&cfg);
+    const char *def_limit_s = config_get_or_default(&cfg, "log.limit");
+    uint64_t def_limit      = strtoull(def_limit_s, NULL, 10);
+    config_free(&cfg);
+    
+    uint64_t *limit   = clag_uint64("limit",   'n', def_limit,    "Max entries (0 = all)");
+    char    **since   = clag_str   ("since",    0,  NULL,   "After  date (YYYY-MM-DD or ISO)");
+    char    **until   = clag_str   ("until",    0,  NULL,   "Before date (YYYY-MM-DD or ISO)");
+    char    **id_flag = clag_str   ("id",       0,  NULL,   "Filter to issue ID (prefix match)");
+    char    **event   = clag_str   ("event",   'e', NULL,   "Filter by event type");
+    char    **author  = clag_str   ("author",  'a', NULL,   "Filter by author");
+    bool     *oneline = clag_bool  ("oneline", 'l', false,  "Compact one-line output");
+    bool     *reverse = clag_bool  ("reverse", 'r', false,  "Oldest entries first");
 
     clag_usage("[<id>] [options]");
     clag_choices("event",

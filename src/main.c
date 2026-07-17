@@ -1,3 +1,4 @@
+#include "global.h"
 #include <stdbool.h>
 
 #define LOG_IMPLEMENTATION
@@ -7,9 +8,47 @@
 #define NEED_CMD_HELPER
 #include "cmd/cmd.h"
 
+#include <fcntl.h>
+#include <sys/stat.h>
+
+char g_repo_root[PATH_MAX] = {0};
+
+static bool tatr_find_root(void)
+{
+    char cwd[4096];
+    if (!getcwd(cwd, sizeof(cwd))) return false;
+ 
+    char probe[4096 + 16];
+    while (1) {
+        // Build probe path
+        snprintf(probe, sizeof(probe), "%s" FS_SEP ".tatr", cwd);
+ 
+        // follows symlinks
+        struct stat st;
+        if (stat(probe, &st) == 0 && S_ISDIR(st.st_mode)) {
+            snprintf(g_repo_root, sizeof(g_repo_root), "%s", cwd);
+            return true;
+        }
+ 
+        char *last = strrchr(cwd, '/');
+#ifdef _WIN32
+        char *last2 = strrchr(cwd, '\\');
+        if (last2 > last) last = last2;
+        if (!last || last == cwd + 2) break;
+#else
+        // filesystem root
+        if (!last || last == cwd) break;
+#endif
+        *last = '\0';
+    }
+ 
+    return false;
+}
+
 int main(int argc, char **argv)
 {
     log_init();
+    config_write_global_default();
     if (argc < 2) {
         print_global_help();
         return 0;
@@ -26,7 +65,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
+    tatr_find_root();
     clag_reset();
-    int result = cmd->fn(sub_argc, sub_argv);
-    return result;
+    return cmd->fn(sub_argc, sub_argv);
 }

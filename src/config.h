@@ -67,4 +67,6 @@ bool config_unset(const char *path, const char *key);
 // Free all heap memory owned by a Config.
 void config_free(Config *c);
 
+bool config_write_global_default(void);
+
 #endif // CONFIG_H_

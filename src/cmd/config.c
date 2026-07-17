@@ -66,7 +66,7 @@ int cmd_config(int argc, char **argv)
     if (*flag_global)
         scope_path = config_global_path();
     else
-        scope_path = CONFIG_LOCAL_PATH;
+        scope_path = TATR_CONFIG_PATH;
 
     if (*flag_list) {
         Config c = {0};

@@ -22,6 +22,7 @@ SRC := \
     $(SRC_DIR)/codec.c \
     $(SRC_DIR)/mime.c \
     $(SRC_DIR)/config.c \
+    $(SRC_DIR)/global.c \
 	$(SRC_DIR)/ui.c
 
 EXPORT_SRC := $(wildcard $(CMD_DIR)/export/*.c)

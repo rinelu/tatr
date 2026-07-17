@@ -10,6 +10,12 @@
 #include <dirent.h>
 #endif
 
+#ifdef _WIN32
+#define FS_SEP "\\"
+#else
+#define FS_SEP "/"
+#endif
+
 typedef struct {
     const char **items;
     size_t count;

@@ -1,4 +1,5 @@
 #include "editor.h"
+#include "config.h"
 #include "fs.h"
 #include "log.h"
 
@@ -96,7 +97,13 @@ static int run_editor(const char *editor, const char *path)
 
 static const char *get_editor(void)
 {
-    const char *ed = getenv("VISUAL");
+    Config cfg = {0};
+    config_load(&cfg);
+    const char *def_editor = config_get_or_default(&cfg, "default_editor");
+    config_free(&cfg);
+
+    const char *ed = def_editor;
+    if (!ed || !*ed) ed = getenv("VISUAL");
     if (!ed || !*ed) ed = getenv("EDITOR");
     if (!ed || !*ed) ed = "vi";
     return ed;

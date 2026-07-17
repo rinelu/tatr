@@ -2,6 +2,7 @@
 #include "cmd.h"
 #include "config.h"
 #include "editor.h"
+#include "global.h"
 #include "temp.h"
 
 #if defined(__linux__)
@@ -132,12 +133,12 @@ int cmd_new(int argc, char **argv)
     String_Builder id = {0};
     generate_issue_id(&id);
 
-    const char *issue_dir  = fs_path(".tatr/issues", id.items);
+    const char *issue_dir  = fs_path(TATR_ISSUES_PATH, id.items);
     const char *issue_file = fs_path(issue_dir, "issue.tatr");
     const char *attach_dir = fs_path(issue_dir, "attachments");
 
     Temp_Checkpoint tmark = temp_save();
-    const char *path = fs_path(".tatr/issues", id.items);
+    const char *path = fs_path(TATR_ISSUES_PATH, id.items);
     if (!fs_mkdir(path)) {
         log_error("Failed to create issue '%s'", id.items);
         goto defer;

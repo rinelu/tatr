@@ -1,5 +1,8 @@
 #include "cmd.h"
+#include "global.h"
 #include "issue.h"
+#include <stdint.h>
+#include <stdlib.h>
 
 #define COL_ID        24
 #define COL_STATUS    8
@@ -38,12 +41,19 @@ typedef struct {
 
 static bool list__parse_opts(int argc, char **argv, ListOptions *opt)
 {
-    char    **status   = clag_str ("status",   's', "",    "Filter by status");
-    char    **priority = clag_str ("priority", 'p', "",    "Filter by priority");
-    char    **tag      = clag_str ("tag",      'T', NULL,  "Filter by tag");
-    bool     *all      = clag_bool("all",      'a', false, "Include closed issues");
-    bool     *nohdr    = clag_bool("no-header",'q', false, "Suppress column header");
-    uint64_t *limit    = clag_uint64("limit",  'n', 0,     "Max issues to show (0 = all)");
+    Config cfg = {0};
+    config_load(&cfg);
+    const char *def_limit_s = config_get_or_default(&cfg, "list.limit");
+    bool def_all            = parse_bool(config_get_or_default(&cfg, "list.show_closed"));
+    uint64_t def_limit      = strtoull(def_limit_s, NULL, 10);
+    config_free(&cfg);
+
+    char    **status   = clag_str ("status",   's', NULL,      "Filter by status");
+    char    **priority = clag_str ("priority", 'p', NULL,      "Filter by priority");
+    char    **tag      = clag_str ("tag",      'T', NULL,      "Filter by tag");
+    bool     *all      = clag_bool("all",      'a', def_all,   "Include closed issues");
+    bool     *nohdr    = clag_bool("no-header",'q', false,     "Suppress column header");
+    uint64_t *limit    = clag_uint64("limit",  'n', def_limit, "Max issues to show (0 = all)");
 
     clag_usage("[options]");
 
@@ -72,7 +82,7 @@ int cmd_list(int argc, char **argv)
     int result = 1;
     Temp_Checkpoint tmark = temp_save(); 
     File_Paths ids = {0};
-    if (!fs_read_dir(".tatr/issues", &ids)) {
+    if (!fs_read_dir(TATR_ISSUES_PATH, &ids)) {
         log_error("cannot read issues directory");
         goto defer;
     }

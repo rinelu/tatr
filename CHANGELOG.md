@@ -15,7 +15,32 @@ We follow https://semver.org/:
 
 # Changelogs
 
-## 2.0.0 (2026-04-18) (ON-GOING)
+## 2.1.0 (2026-05-03)
+
+- Add global repository root detection (`g_repo_root`)
+- Add `tatr_find_root()` to locate `.tatr/` by walking up filesystem tree
+- Initialize repo root automatically in `main`
+- Introduce path abstraction layer:
+  - Add `tatr_path()` for repo-relative path building
+  - Add `TATR_DIR_PATH`, `TATR_ISSUES_PATH`, `TATR_CONFIG_PATH`, `TATR_LOG_PATH`
+  - Replace hardcoded `.tatr/*` paths across commands
+- Refactor filesystem usage across commands
+- Move `FS_SEP` macro from `fs.c` to `fs.h`
+- Remove legacy hardcoded path constants (`CONFIG_LOCAL_PATH`, `TATRLOG_PATH`)
+- Improve config system:
+  - Add default fallback values for config keys (author, log.limit, list.limit, etc.)
+  - Add `config_write_global_default()` to auto-create global config template
+  - Auto-create global config file on startup if missing
+  - Improve editor selection with config-based `default_editor`
+  - Default author set to `"unknown"`
+- Improve CLI defaults:
+  - `list` now reads defaults from config (`list.limit`, `list.show_closed`)
+  - `log` now reads default limit from `log.limit`
+- Improve safety and portability:
+  - Ensure config directory exists before writing global config
+  - Reduce hardcoded defaults in favor of configuration-driven behavior
+
+## 2.0.0 (2026-04-18)
 
 - New `.tatr/log` file introduced for history tracking
 - Add persistent event log system (`tatrlog`)
