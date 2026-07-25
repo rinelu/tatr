@@ -16,7 +16,7 @@ static void test_attach_single_file(void)
 {
     char args[256];
     snprintf(args, sizeof(args), "attach %s report.pdf", issue_id);
-    TatrResult r = tatr(args);
+    Tatr_Result r = tatr(args);
     ASSERT_CMD_OK(r);
     ASSERT_OUT_CONTAINS(r, "Attached");
 
@@ -40,7 +40,7 @@ static void test_attach_multiple_files(void)
 {
     char args[256];
     snprintf(args, sizeof(args), "attach %s report.pdf screenshot.png notes.txt", issue_id);
-    TatrResult r = tatr(args);
+    Tatr_Result r = tatr(args);
     ASSERT_CMD_OK(r);
 
     char path[256];
@@ -56,14 +56,14 @@ static void test_attach_nonexistent_file_fails(void)
 {
     char args[256];
     snprintf(args, sizeof(args), "attach %s ghost.bin", issue_id);
-    TatrResult r = tatr(args);
+    Tatr_Result r = tatr(args);
     ASSERT_CMD_FAIL(r);
     ASSERT_OUT_CONTAINS(r, "not found");
 }
 
 static void test_attach_unknown_issue_fails(void)
 {
-    TatrResult r = tatr("attach bad_id notes.txt");
+    Tatr_Result r = tatr("attach bad_id notes.txt");
     ASSERT_CMD_FAIL(r);
     ASSERT_OUT_CONTAINS(r, "not found");
 }
@@ -72,13 +72,13 @@ static void test_attach_missing_args_fails(void)
 {
     char args[128];
     snprintf(args, sizeof(args), "attach %s", issue_id);
-    TatrResult r = tatr(args);
+    Tatr_Result r = tatr(args);
     ASSERT_CMD_FAIL(r);
 }
 
 static void test_attach_no_args_fails(void)
 {
-    TatrResult r = tatr("attach");
+    Tatr_Result r = tatr("attach");
     ASSERT_CMD_FAIL(r);
 }
 
@@ -87,7 +87,7 @@ static void test_attach_conflict_renamed(void)
     char args[256];
     snprintf(args, sizeof(args), "attach %s notes.txt", issue_id);
     tatr(args);
-    TatrResult r = tatr(args);
+    Tatr_Result r = tatr(args);
     ASSERT_CMD_OK(r);
     ASSERT_OUT_CONTAINS(r, "renamed");
 }
@@ -96,7 +96,7 @@ static void test_attachls_empty(void)
 {
     char args[128];
     snprintf(args, sizeof(args), "attachls %s", issue_id);
-    TatrResult r = tatr(args);
+    Tatr_Result r = tatr(args);
     ASSERT_CMD_OK(r);
     ASSERT_OUT_CONTAINS(r, "no attachments");
 }
@@ -108,7 +108,7 @@ static void test_attachls_lists_files(void)
     tatr(args);
 
     snprintf(args, sizeof(args), "attachls %s", issue_id);
-    TatrResult r = tatr(args);
+    Tatr_Result r = tatr(args);
     ASSERT_CMD_OK(r);
     ASSERT_OUT_CONTAINS(r, "report.pdf");
     ASSERT_OUT_CONTAINS(r, "notes.txt");
@@ -116,14 +116,14 @@ static void test_attachls_lists_files(void)
 
 static void test_attachls_unknown_issue_fails(void)
 {
-    TatrResult r = tatr("attachls ghost_id");
+    Tatr_Result r = tatr("attachls ghost_id");
     ASSERT_CMD_FAIL(r);
     ASSERT_OUT_CONTAINS(r, "not found");
 }
 
 static void test_attachls_missing_id_fails(void)
 {
-    TatrResult r = tatr("attachls");
+    Tatr_Result r = tatr("attachls");
     ASSERT_CMD_FAIL(r);
 }
 
@@ -134,7 +134,7 @@ static void test_detach_removes_file(void)
     tatr(args);
 
     snprintf(args, sizeof(args), "detach %s notes.txt", issue_id);
-    TatrResult r = tatr(args);
+    Tatr_Result r = tatr(args);
     ASSERT_CMD_OK(r);
     ASSERT_OUT_CONTAINS(r, "Removed");
 
@@ -147,14 +147,14 @@ static void test_detach_nonexistent_file_fails(void)
 {
     char args[256];
     snprintf(args, sizeof(args), "detach %s ghost.txt", issue_id);
-    TatrResult r = tatr(args);
+    Tatr_Result r = tatr(args);
     ASSERT_CMD_FAIL(r);
     ASSERT_OUT_CONTAINS(r, "not found");
 }
 
 static void test_detach_unknown_issue_fails(void)
 {
-    TatrResult r = tatr("detach ghost_id notes.txt");
+    Tatr_Result r = tatr("detach ghost_id notes.txt");
     ASSERT_CMD_FAIL(r);
     ASSERT_OUT_CONTAINS(r, "not found");
 }
@@ -163,13 +163,13 @@ static void test_detach_missing_args_fails(void)
 {
     char args[128];
     snprintf(args, sizeof(args), "detach %s", issue_id);
-    TatrResult r = tatr(args);
+    Tatr_Result r = tatr(args);
     ASSERT_CMD_FAIL(r);
 }
 
 static void test_detach_no_args_fails(void)
 {
-    TatrResult r = tatr("detach");
+    Tatr_Result r = tatr("detach");
     ASSERT_CMD_FAIL(r);
 }
 
@@ -198,7 +198,7 @@ static void test_detach_not_listed_in_attachls_after(void)
     tatr(args);
 
     snprintf(args, sizeof(args), "attachls %s", issue_id);
-    TatrResult r = tatr(args);
+    Tatr_Result r = tatr(args);
     ASSERT_OUT_NOT_CONTAINS(r, "notes.txt");
 }
 

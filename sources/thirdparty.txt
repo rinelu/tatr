@@ -1,0 +1,3 @@
+src/thirdparty/fs.c
+src/thirdparty/astring.c
+src/thirdparty/temp.c

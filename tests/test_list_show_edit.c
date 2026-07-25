@@ -17,28 +17,28 @@ static void setup_populated_repo(void)
 
 static void test_list_shows_open_issues(void)
 {
-    TatrResult r = tatr("list");
+    Tatr_Result r = tatr("list");
     ASSERT_CMD_OK(r);
     ASSERT_OUT_CONTAINS(r, "open normal");
 }
 
 static void test_list_hides_closed_by_default(void)
 {
-    TatrResult r = tatr("list");
+    Tatr_Result r = tatr("list");
     ASSERT_CMD_OK(r);
     ASSERT_OUT_NOT_CONTAINS(r, "old bug");
 }
 
 static void test_list_all_includes_closed(void)
 {
-    TatrResult r = tatr("list --all");
+    Tatr_Result r = tatr("list --all");
     ASSERT_CMD_OK(r);
     ASSERT_OUT_CONTAINS(r, "old bug");
 }
 
 static void test_list_filter_by_status(void)
 {
-    TatrResult r = tatr("list --status open");
+    Tatr_Result r = tatr("list --status open");
     ASSERT_CMD_OK(r);
     ASSERT_OUT_CONTAINS(r, "open normal");
     ASSERT_OUT_CONTAINS(r, "critical crash");
@@ -46,7 +46,7 @@ static void test_list_filter_by_status(void)
 
 static void test_list_filter_by_priority(void)
 {
-    TatrResult r = tatr("list --priority critical");
+    Tatr_Result r = tatr("list --priority critical");
     ASSERT_CMD_OK(r);
     ASSERT_OUT_CONTAINS(r, "critical crash");
     ASSERT_OUT_NOT_CONTAINS(r, "open normal");
@@ -54,7 +54,7 @@ static void test_list_filter_by_priority(void)
 
 static void test_list_filter_by_tag(void)
 {
-    TatrResult r = tatr("list --tag crash");
+    Tatr_Result r = tatr("list --tag crash");
     ASSERT_CMD_OK(r);
     ASSERT_OUT_CONTAINS(r, "critical crash");
     ASSERT_OUT_NOT_CONTAINS(r, "open normal");
@@ -62,7 +62,7 @@ static void test_list_filter_by_tag(void)
 
 static void test_list_tag_shared_between_issues(void)
 {
-    TatrResult r = tatr("list --tag backend");
+    Tatr_Result r = tatr("list --tag backend");
     ASSERT_CMD_OK(r);
     ASSERT_OUT_CONTAINS(r, "open normal");
     ASSERT_OUT_CONTAINS(r, "critical crash");
@@ -70,22 +70,20 @@ static void test_list_tag_shared_between_issues(void)
 
 static void test_list_limit(void)
 {
-    TatrResult r = tatr("list --limit 1");
+    Tatr_Result r = tatr("list --limit 1");
     ASSERT_CMD_OK(r);
-    int count = 0;
     const char *combined = tatr_combined(&r);
-    const char *p = combined;
-    while ((p = strstr(p, issue_open)) || (p = strstr(combined, issue_critical))) {
-        count++;
-        if (p) p++;
-        break;
-    }
     ASSERT_TRUE(strlen(combined) > 0);
+
+    int count = 0;
+    if (strstr(combined, issue_open)) count++;
+    if (strstr(combined, issue_critical)) count++;
+    ASSERT_TRUE(count == 1);
 }
 
 static void test_list_no_header_flag(void)
 {
-    TatrResult r = tatr("list --no-header");
+    Tatr_Result r = tatr("list --no-header");
     ASSERT_CMD_OK(r);
     ASSERT_TRUE(r.exit_code == 0);
 }
@@ -93,7 +91,7 @@ static void test_list_no_header_flag(void)
 static void test_list_empty_repo_message(void)
 {
     tatr_init();
-    TatrResult r = tatr("list");
+    Tatr_Result r = tatr("list");
     ASSERT_CMD_OK(r);
     ASSERT_OUT_CONTAINS(r, "no issues");
 }
@@ -102,7 +100,7 @@ static void test_show_displays_title(void)
 {
     char args[128];
     snprintf(args, sizeof(args), "show %s", issue_open);
-    TatrResult r = tatr(args);
+    Tatr_Result r = tatr(args);
     ASSERT_CMD_OK(r);
     ASSERT_OUT_CONTAINS(r, "open normal");
 }
@@ -111,7 +109,7 @@ static void test_show_displays_priority(void)
 {
     char args[128];
     snprintf(args, sizeof(args), "show %s", issue_critical);
-    TatrResult r = tatr(args);
+    Tatr_Result r = tatr(args);
     ASSERT_CMD_OK(r);
     ASSERT_OUT_CONTAINS(r, "critical");
 }
@@ -120,7 +118,7 @@ static void test_show_raw_flag(void)
 {
     char args[128];
     snprintf(args, sizeof(args), "show %s --raw", issue_open);
-    TatrResult r = tatr(args);
+    Tatr_Result r = tatr(args);
     ASSERT_CMD_OK(r);
     ASSERT_OUT_CONTAINS(r, "title:");
     ASSERT_OUT_CONTAINS(r, "status:");
@@ -128,14 +126,14 @@ static void test_show_raw_flag(void)
 
 static void test_show_unknown_id_fails(void)
 {
-    TatrResult r = tatr("show nonexistent_id_xyz");
+    Tatr_Result r = tatr("show nonexistent_id_xyz");
     ASSERT_CMD_FAIL(r);
     ASSERT_OUT_CONTAINS(r, "not found");
 }
 
 static void test_show_missing_id_fails(void)
 {
-    TatrResult r = tatr("show");
+    Tatr_Result r = tatr("show");
     ASSERT_CMD_FAIL(r);
 }
 
@@ -143,7 +141,7 @@ static void test_show_lists_attachments_section(void)
 {
     char args[128];
     snprintf(args, sizeof(args), "show %s", issue_open);
-    TatrResult r = tatr(args);
+    Tatr_Result r = tatr(args);
     ASSERT_CMD_OK(r);
     ASSERT_OUT_CONTAINS(r, "Attachments");
 }
@@ -152,7 +150,7 @@ static void test_edit_title(void)
 {
     char args[256];
     snprintf(args, sizeof(args), "edit %s --field title --value 'renamed title'", issue_open);
-    TatrResult r = tatr(args);
+    Tatr_Result r = tatr(args);
     ASSERT_CMD_OK(r);
 
     char path[256];
@@ -199,7 +197,7 @@ static void test_edit_unknown_field_rejected(void)
 {
     char args[256];
     snprintf(args, sizeof(args), "edit %s --field flavor --value vanilla", issue_open);
-    TatrResult r = tatr(args);
+    Tatr_Result r = tatr(args);
     ASSERT_CMD_FAIL(r);
     ASSERT_OUT_CONTAINS(r, "invalid value");
 }
@@ -208,19 +206,19 @@ static void test_edit_no_change_warns(void)
 {
     char args[256];
     snprintf(args, sizeof(args), "edit %s --field priority --value normal", issue_open);
-    TatrResult r = tatr(args);
+    Tatr_Result r = tatr(args);
     ASSERT_OUT_CONTAINS(r, "no change");
 }
 
 static void test_edit_missing_id_fails(void)
 {
-    TatrResult r = tatr("edit --field title --value foo");
+    Tatr_Result r = tatr("edit --field title --value foo");
     ASSERT_CMD_FAIL(r);
 }
 
 static void test_edit_unknown_id_fails(void)
 {
-    TatrResult r = tatr("edit bogus_id --field title --value foo");
+    Tatr_Result r = tatr("edit bogus_id --field title --value foo");
     ASSERT_CMD_FAIL(r);
     ASSERT_OUT_CONTAINS(r, "not found");
 }

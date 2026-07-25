@@ -15,7 +15,79 @@ We follow https://semver.org/:
 
 # Changelogs
 
-## 2.0.0 (2026-04-18) (ON-GOING)
+## v3.0.0 (2026-07-25)
+
+- Reorganize project layout by moving all source code under `src/`
+- Introduce a stable internal `libtatr` API (`tatr.h`) decoupled from CLI parsing and output
+- Add renderer abstraction with human and JSON output backends
+- Add pluggable storage backend interface for filesystem and in-memory implementations
+- Add schema versioning and forward-only repository migrations
+- Add module registry and formalize the module interface
+- Add typed configuration schema and typed configuration accessors
+- Add centralized `Tatr_Error` error handling across the internal API
+- Add issue management APIs for create, delete, existence checks, and ID enumeration
+- Add command capability metadata for frontend integration
+- Add unit test framework using an in-memory storage backend
+- Consolidate Makefile and CMake source lists into a shared manifest
+- Add build consistency checks to prevent build system drift
+- Fix memory leak in issue list and search result handling
+
+### BREAKING CHANGES
+
+- Source tree reorganized under `src/`
+- Introduce a stable internal API, renderer layer, and storage backend abstraction replacing direct command-to-storage interactions
+- Add repository schema versioning.
+- `config_set()` now validates values against the configuration schema and returns `Tatr_Error` instead of `bool`
+
+## 2.2.0 (2026-07-15)
+
+- Reorganize project layout: `src/` and `libs/` split into `main/`, `commands/`, `core/`, `modules/`, `thirdparty/`
+- Add `modules/` for optional, pluggable feature engines (export is the first; mcp/git-hook planned)
+- Split `cmd_export` CLI parsing (`commands/export.c`) from the exporter registry (`modules/export/export.c`)
+- Remove `cmd.h`/`clag` dependency from the exporter registry so non-CLI front-ends can link it directly
+- Add `TATR_MODULE_EXPORT` CMake option and `Makefile` variable to toggle the export module at build time
+- Add `modules/README.md` documenting the convention for adding new modules
+- Fix `tests/Makefile` missing `test_export.c`, causing link failure when built outside of CMake
+
+- Require C23 (`CMAKE_C_STANDARD 23`)
+- Bump `cmake_minimum_required` to 3.21 (needed for MSVC to receive the C standard flag)
+- Actually enforce a C standard project-wide for the first time; previous releases claimed C11 in the changelog but never set `CMAKE_C_STANDARD`
+
+- Fix Windows build failure: `new.c` used `BCryptGenRandom`/`ULONG`/`BCRYPT_USE_SYSTEM_PREFERRED_RNG` without including `<windows.h>`/`<bcrypt.h>`
+- Fix use of uninitialized `String_Builder`s (`tags_sb`, `body_text`) in `cmd_new()` on early-return paths
+- Fix JSON export reading uninitialized heap memory when `fread()` returned fewer bytes than expected
+- Fix `fill_random()` silently ignoring short reads / `EINTR` from `getrandom()`
+- Replace C99 compound-literal usages with plain declarations/assignments for MSVC compatibility
+- Fix `ctest` reporting "No tests were found" from the root build directory (missing top-level `enable_testing()`)
+- Fix `-Wunused-variable` warnings in `clag.h` that only appeared in Release/`NDEBUG` builds
+- Fix `test_list_limit` not actually verifying `--limit` behavior
+
+## 2.1.0 (2026-05-03)
+
+- Add global repository root detection (`g_repo_root`)
+- Add `tatr_find_root()` to locate `.tatr/` by walking up filesystem tree
+- Initialize repo root automatically in `main`
+- Introduce path abstraction layer:
+  - Add `tatr_path()` for repo-relative path building
+  - Add `TATR_DIR_PATH`, `TATR_ISSUES_PATH`, `TATR_CONFIG_PATH`, `TATR_LOG_PATH`
+  - Replace hardcoded `.tatr/*` paths across commands
+- Refactor filesystem usage across commands
+- Move `FS_SEP` macro from `fs.c` to `fs.h`
+- Remove legacy hardcoded path constants (`CONFIG_LOCAL_PATH`, `TATRLOG_PATH`)
+- Improve config system:
+  - Add default fallback values for config keys (author, log.limit, list.limit, etc.)
+  - Add `config_write_global_default()` to auto-create global config template
+  - Auto-create global config file on startup if missing
+  - Improve editor selection with config-based `default_editor`
+  - Default author set to `"unknown"`
+- Improve CLI defaults:
+  - `list` now reads defaults from config (`list.limit`, `list.show_closed`)
+  - `log` now reads default limit from `log.limit`
+- Improve safety and portability:
+  - Ensure config directory exists before writing global config
+  - Reduce hardcoded defaults in favor of configuration-driven behavior
+
+## 2.0.0 (2026-04-18)
 
 - New `.tatr/log` file introduced for history tracking
 - Add persistent event log system (`tatrlog`)

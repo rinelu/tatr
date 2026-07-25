@@ -1,9 +1,10 @@
 #include <stdint.h>
 #define CLAG_IMPLEMENTATION
-#include "../libs/clag.h"
+#include "clag.h"
 
-#define LOG_GLOBAL
+#define PROGRAM_NAME ""
 #define LOG_IMPLEMENTATION
+#include "log.h"
 
 #include "test_framework.h"
 

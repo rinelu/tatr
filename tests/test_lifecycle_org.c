@@ -14,7 +14,7 @@ static void test_close_marks_closed(void)
 {
     char args[128];
     snprintf(args, sizeof(args), "close %s", issue_a);
-    TatrResult r = tatr(args);
+    Tatr_Result r = tatr(args);
     ASSERT_CMD_OK(r);
     ASSERT_OUT_CONTAINS(r, "Closed");
 
@@ -27,7 +27,7 @@ static void test_close_wontfix_reason(void)
 {
     char args[128];
     snprintf(args, sizeof(args), "close %s --reason wontfix", issue_a);
-    TatrResult r = tatr(args);
+    Tatr_Result r = tatr(args);
     ASSERT_CMD_OK(r);
 
     char path[256];
@@ -37,13 +37,13 @@ static void test_close_wontfix_reason(void)
 
 static void test_close_unknown_id_fails(void)
 {
-    TatrResult r = tatr("close nonexistent_xyz");
+    Tatr_Result r = tatr("close nonexistent_xyz");
     ASSERT_CMD_FAIL(r);
 }
 
 static void test_close_missing_id_fails(void)
 {
-    TatrResult r = tatr("close");
+    Tatr_Result r = tatr("close");
     ASSERT_CMD_FAIL(r);
 }
 
@@ -53,7 +53,7 @@ static void test_close_hidden_from_list_after_close(void)
     snprintf(args, sizeof(args), "close %s", issue_a);
     tatr(args);
 
-    TatrResult r = tatr("list");
+    Tatr_Result r = tatr("list");
     ASSERT_OUT_NOT_CONTAINS(r, "issue alpha");
 }
 
@@ -64,7 +64,7 @@ static void test_reopen_sets_open(void)
     tatr(args);
 
     snprintf(args, sizeof(args), "reopen %s", issue_a);
-    TatrResult r = tatr(args);
+    Tatr_Result r = tatr(args);
     ASSERT_CMD_OK(r);
     ASSERT_OUT_CONTAINS(r, "Reopened");
 
@@ -75,13 +75,13 @@ static void test_reopen_sets_open(void)
 
 static void test_reopen_unknown_id_fails(void)
 {
-    TatrResult r = tatr("reopen ghost_id");
+    Tatr_Result r = tatr("reopen ghost_id");
     ASSERT_CMD_FAIL(r);
 }
 
 static void test_reopen_missing_id_fails(void)
 {
-    TatrResult r = tatr("reopen");
+    Tatr_Result r = tatr("reopen");
     ASSERT_CMD_FAIL(r);
 }
 
@@ -94,7 +94,7 @@ static void test_reopen_appears_in_list(void)
     snprintf(args, sizeof(args), "reopen %s", issue_a);
     tatr(args);
 
-    TatrResult r = tatr("list");
+    Tatr_Result r = tatr("list");
     ASSERT_OUT_CONTAINS(r, "issue alpha");
 }
 
@@ -102,7 +102,7 @@ static void test_delete_removes_directory(void)
 {
     char args[128];
     snprintf(args, sizeof(args), "delete %s", issue_a);
-    TatrResult r = tatr(args);
+    Tatr_Result r = tatr(args);
     ASSERT_CMD_OK(r);
 
     char path[256];
@@ -112,14 +112,14 @@ static void test_delete_removes_directory(void)
 
 static void test_delete_unknown_id_fails(void)
 {
-    TatrResult r = tatr("delete ghost_issue");
+    Tatr_Result r = tatr("delete ghost_issue");
     ASSERT_CMD_FAIL(r);
     ASSERT_OUT_CONTAINS(r, "not found");
 }
 
 static void test_delete_missing_id_fails(void)
 {
-    TatrResult r = tatr("delete");
+    Tatr_Result r = tatr("delete");
     ASSERT_CMD_FAIL(r);
 }
 
@@ -129,7 +129,7 @@ static void test_delete_not_in_list_after_delete(void)
     snprintf(args, sizeof(args), "delete %s", issue_a);
     tatr(args);
 
-    TatrResult r = tatr("list --all");
+    Tatr_Result r = tatr("list --all");
     ASSERT_OUT_NOT_CONTAINS(r, "issue alpha");
 }
 
@@ -137,7 +137,7 @@ static void test_tag_add(void)
 {
     char args[128];
     snprintf(args, sizeof(args), "tag %s --tag newtag", issue_a);
-    TatrResult r = tatr(args);
+    Tatr_Result r = tatr(args);
     ASSERT_CMD_OK(r);
 
     char path[256];
@@ -162,7 +162,7 @@ static void test_tag_remove(void)
 {
     char args[256];
     snprintf(args, sizeof(args), "tag %s --tag alpha --remove", issue_a);
-    TatrResult r = tatr(args);
+    Tatr_Result r = tatr(args);
     ASSERT_CMD_OK(r);
 
     char path[256];
@@ -180,7 +180,7 @@ static void test_tag_remove_nonexistent_warns(void)
 {
     char args[128];
     snprintf(args, sizeof(args), "tag %s --tag nothere --remove", issue_a);
-    TatrResult r = tatr(args);
+    Tatr_Result r = tatr(args);
     ASSERT_OUT_CONTAINS(r, "not present");
 }
 
@@ -188,7 +188,7 @@ static void test_tag_duplicate_add_warns(void)
 {
     char args[128];
     snprintf(args, sizeof(args), "tag %s --tag alpha", issue_a);
-    TatrResult r = tatr(args);
+    Tatr_Result r = tatr(args);
     ASSERT_OUT_CONTAINS(r, "already present");
 }
 
@@ -196,7 +196,7 @@ static void test_tag_multiple_at_once(void)
 {
     char args[256];
     snprintf(args, sizeof(args), "tag %s --tag x,y,z", issue_a);
-    TatrResult r = tatr(args);
+    Tatr_Result r = tatr(args);
     ASSERT_CMD_OK(r);
 
     char path[256];
@@ -211,7 +211,7 @@ static void test_comment_appends_to_file(void)
 {
     char args[256];
     snprintf(args, sizeof(args), "comment %s --message 'Found root cause'", issue_a);
-    TatrResult r = tatr(args);
+    Tatr_Result r = tatr(args);
     ASSERT_CMD_OK(r);
     ASSERT_OUT_CONTAINS(r, "Comment added");
 
@@ -235,7 +235,7 @@ static void test_comment_missing_message_fails(void)
 {
     char args[128];
     snprintf(args, sizeof(args), "comment %s", issue_a);
-    TatrResult r = tatr(args);
+    Tatr_Result r = tatr(args);
     ASSERT_CMD_FAIL(r);
 }
 
@@ -256,33 +256,33 @@ static void test_comment_multiple_appended(void)
 
 static void test_search_finds_title_match(void)
 {
-    TatrResult r = tatr("search alpha");
+    Tatr_Result r = tatr("search alpha");
     ASSERT_CMD_OK(r);
     ASSERT_OUT_CONTAINS(r, "issue alpha");
 }
 
 static void test_search_no_match_message(void)
 {
-    TatrResult r = tatr("search xyznomatch");
+    Tatr_Result r = tatr("search xyznomatch");
     ASSERT_OUT_CONTAINS(r, "no results");
 }
 
 static void test_search_case_insensitive_default(void)
 {
-    TatrResult r = tatr("search ALPHA");
+    Tatr_Result r = tatr("search ALPHA");
     ASSERT_CMD_OK(r);
     ASSERT_OUT_CONTAINS(r, "issue alpha");
 }
 
 static void test_search_case_sensitive_no_match(void)
 {
-    TatrResult r = tatr("search --case ALPHA");
+    Tatr_Result r = tatr("search --case ALPHA");
     ASSERT_OUT_NOT_CONTAINS(r, "issue alpha");
 }
 
 static void test_search_field_filter_tag(void)
 {
-    TatrResult r = tatr("search tag:alpha");
+    Tatr_Result r = tatr("search tag:alpha");
     ASSERT_CMD_OK(r);
     ASSERT_OUT_CONTAINS(r, "issue alpha");
     ASSERT_OUT_NOT_CONTAINS(r, "issue beta");
@@ -290,7 +290,7 @@ static void test_search_field_filter_tag(void)
 
 static void test_search_field_filter_status(void)
 {
-    TatrResult r = tatr("search status:open");
+    Tatr_Result r = tatr("search status:open");
     ASSERT_CMD_OK(r);
     ASSERT_OUT_CONTAINS(r, "issue alpha");
     ASSERT_OUT_CONTAINS(r, "issue beta");
@@ -298,7 +298,7 @@ static void test_search_field_filter_status(void)
 
 static void test_search_field_filter_priority(void)
 {
-    TatrResult r = tatr("search priority:high");
+    Tatr_Result r = tatr("search priority:high");
     ASSERT_CMD_OK(r);
     ASSERT_OUT_CONTAINS(r, "issue alpha");
     ASSERT_OUT_NOT_CONTAINS(r, "issue beta");
@@ -306,7 +306,7 @@ static void test_search_field_filter_priority(void)
 
 static void test_search_multi_token_and(void)
 {
-    TatrResult r = tatr("search alpha shared");
+    Tatr_Result r = tatr("search alpha shared");
     ASSERT_CMD_OK(r);
     ASSERT_OUT_CONTAINS(r, "issue alpha");
     ASSERT_OUT_NOT_CONTAINS(r, "issue beta");
@@ -314,7 +314,7 @@ static void test_search_multi_token_and(void)
 
 static void test_search_limit(void)
 {
-    TatrResult r = tatr("search shared --limit 1");
+    Tatr_Result r = tatr("search shared --limit 1");
     ASSERT_CMD_OK(r);
     ASSERT_OUT_CONTAINS(r, "1 result");
 }
@@ -325,13 +325,13 @@ static void test_search_header_only(void)
     snprintf(args, sizeof(args), "comment %s --message 'unique_body_phrase'", issue_b);
     tatr(args);
 
-    TatrResult r = tatr("search --header unique_body_phrase");
+    Tatr_Result r = tatr("search --header unique_body_phrase");
     ASSERT_OUT_NOT_CONTAINS(r, "issue beta");
 }
 
 static void test_search_missing_query_fails(void)
 {
-    TatrResult r = tatr("search");
+    Tatr_Result r = tatr("search");
     ASSERT_CMD_FAIL(r);
 }
 

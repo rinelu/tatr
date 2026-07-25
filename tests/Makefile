@@ -2,7 +2,7 @@ CC       ?= cc
 CFLAGS   ?= -g
 TATR_BIN ?= tatr
 
-LIB_DIR = ../libs
+LIB_DIR = ../src/thirdparty
 
 LIB_SRCS := \
     $(LIB_DIR)/astring.c \
@@ -15,7 +15,8 @@ TEST_SRCS := \
     test_list_show_edit.c \
     test_lifecycle_org.c \
     test_attachments.c \
-    test_status_meta.c
+    test_status_meta.c \
+    test_export.c
 
 TARGET := run_tests
 

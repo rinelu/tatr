@@ -7,6 +7,19 @@ on:
   workflow_dispatch:
 
 jobs:
+  build-drift-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake
+
+      - name: Check Makefile / CMakeLists.txt agree on source files
+        run: ./scripts/check-build-drift.sh
+
   linux:
     runs-on: ubuntu-latest
     strategy:
