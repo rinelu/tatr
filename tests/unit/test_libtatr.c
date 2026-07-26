@@ -220,6 +220,19 @@ static void test_tatr_issue_list_filters(void)
     mem_reset();
 }
 
+static char *slurp_tmpfile(FILE *f)
+{
+    long len = ftell(f);
+    rewind(f);
+
+    char *buf = malloc((size_t)len + 1);
+    size_t n = fread(buf, 1, (size_t)len, f);
+    buf[n] = '\0';
+
+    fclose(f);
+    return buf;
+}
+
 static void test_render_json_issue_list(void)
 {
     Tatr_Issue_Summary items[1] = {{
@@ -230,10 +243,9 @@ static void test_render_json_issue_list(void)
     }};
     Tatr_Issue_List_Result r = { .show_header = true, .issues = { .items = items, .count = 1 } };
 
-    char *buf = NULL; size_t sz = 0;
-    FILE *mem = open_memstream(&buf, &sz);
+    FILE *mem = tmpfile();
     renderer_for(TATR_FMT_JSON)->issue_list(mem, &r);
-    fclose(mem);
+    char *buf = slurp_tmpfile(mem);
 
     CHECK_STR(buf,
         "[{\"id\":\"42\",\"title\":\"Fix \\\"the\\\" bug\",\"status\":\"open\",\"priority\":\"critical\"}]\n");
@@ -242,10 +254,9 @@ static void test_render_json_issue_list(void)
 
 static void test_render_json_error(void)
 {
-    char *buf = NULL; size_t sz = 0;
-    FILE *mem = open_memstream(&buf, &sz);
+    FILE *mem = tmpfile();
     renderer_for(TATR_FMT_JSON)->error(mem, TATR_ERR_NOT_FOUND, "issue 'x'");
-    fclose(mem);
+    char *buf = slurp_tmpfile(mem);
 
     CHECK_STR(buf, "{\"error\":\"not found\",\"context\":\"issue 'x'\"}\n");
     free(buf);

@@ -18,7 +18,7 @@ jobs:
           sudo apt-get install -y build-essential cmake
 
       - name: Check Makefile / CMakeLists.txt agree on source files
-        run: ./scripts/check-build-drift.sh
+        run: bash scripts/check-build-drift.sh
 
   linux:
     runs-on: ubuntu-latest

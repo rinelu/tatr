@@ -46,8 +46,6 @@ endif()
 
 # --- Test --- 
 
-enable_testing()
-
 add_test(NAME tatr_tests
     COMMAND $<TARGET_FILE:run_tests>
 )
