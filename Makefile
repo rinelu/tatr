@@ -1,5 +1,5 @@
 CC := cc
-CFLAGS :=
+CFLAGS := -std=gnu2x
 TARGET := tatr
 BUILD ?= Debug
 
@@ -7,52 +7,42 @@ BUILD ?= Debug
 WARNINGS ?= 1
 ASAN ?= 0
 UBSAN ?= 0
+MODULE_EXPORT ?= 1
 
-SRC_DIR := src
-CMD_DIR := src/cmd
-LIB_DIR := libs
+MAIN_DIR := src/main
+CORE_DIR := src/core
+COMMANDS_DIR := src/commands
+MODULES_DIR := src/modules
+THIRDPARTY_DIR := src/thirdparty
 BUILD_DIR := build
+API_DIR := src/api
+STORAGE_DIR := src/storage
+RENDER_DIR := src/render
 
 # Sources
-SRC := \
-	$(SRC_DIR)/main.c \
-	$(SRC_DIR)/issue.c \
-    $(SRC_DIR)/editor.c \
-    $(SRC_DIR)/tatrlog.c \
-    $(SRC_DIR)/codec.c \
-    $(SRC_DIR)/mime.c \
-    $(SRC_DIR)/config.c \
-    $(SRC_DIR)/global.c \
-	$(SRC_DIR)/ui.c
+read_sources = $(shell sed -e 's/#.*//' -e '/^[[:space:]]*$$/d' sources/$(1).txt)
 
-EXPORT_SRC := $(wildcard $(CMD_DIR)/export/*.c)
+MAIN_SRC       := $(call read_sources,main)
+CORE_SRC       := $(call read_sources,core)
+API_SRC        := $(call read_sources,api)
+STORAGE_SRC    := $(call read_sources,storage)
+RENDER_SRC     := $(call read_sources,render)
+COMMANDS_SRC   := $(call read_sources,commands)
+THIRDPARTY_SRC := $(call read_sources,thirdparty)
+MODULES_CORE_SRC := $(call read_sources,modules)
 
-CMD_SRC := \
-	$(CMD_DIR)/basic.c \
-	$(CMD_DIR)/init.c \
-	$(CMD_DIR)/new.c \
-	$(CMD_DIR)/list.c \
-	$(CMD_DIR)/show.c \
-	$(CMD_DIR)/edit.c \
-	$(CMD_DIR)/close.c \
-	$(CMD_DIR)/delete.c \
-	$(CMD_DIR)/comment.c \
-	$(CMD_DIR)/search.c \
-	$(CMD_DIR)/reopen.c \
-	$(CMD_DIR)/attach.c \
-	$(CMD_DIR)/attachls.c \
-	$(CMD_DIR)/detach.c \
-	$(CMD_DIR)/tag.c \
-	$(CMD_DIR)/log.c \
-	$(CMD_DIR)/config.c \
-	$(CMD_DIR)/status.c
+MODULE_SRC := $(MODULES_CORE_SRC)
+MODULE_INCLUDES :=
+MODULE_DEFS :=
 
-LIB_SRC := \
-	$(LIB_DIR)/fs.c \
-	$(LIB_DIR)/astring.c \
-	$(LIB_DIR)/temp.c
+ifeq ($(MODULE_EXPORT),1)
+	MODULE_SRC += $(wildcard $(MODULES_DIR)/export/*.c)
+	MODULE_INCLUDES += -I$(MODULES_DIR)/export
+	MODULE_DEFS += -DTATR_MODULE_EXPORT
+	COMMANDS_SRC += $(COMMANDS_DIR)/export.c
+endif
 
-ALL_SRC := $(SRC) $(CMD_SRC) $(EXPORT_SRC) $(LIB_SRC)
+ALL_SRC := $(MAIN_SRC) $(CORE_SRC) $(API_SRC) $(STORAGE_SRC) $(RENDER_SRC) $(COMMANDS_SRC) $(MODULE_SRC) $(THIRDPARTY_SRC)
 OBJ := $(ALL_SRC:%.c=$(BUILD_DIR)/%.o)
 
 WARN_FLAGS := \
@@ -75,7 +65,7 @@ ifeq ($(UBSAN),1)
 	SAN_FLAGS += -fsanitize=undefined
 endif
 
-CFLAGS += $(SAN_FLAGS)
+CFLAGS += $(SAN_FLAGS) $(MODULE_DEFS)
 LDFLAGS += $(SAN_FLAGS)
 
 ifeq ($(BUILD),Debug)
@@ -84,7 +74,7 @@ else ifeq ($(BUILD),Release)
 	CFLAGS += -O3 -DNDEBUG
 endif
 
-INCLUDES := -I$(SRC_DIR) -I$(CMD_DIR) -I$(LIB_DIR)
+INCLUDES := -I$(CORE_DIR) -I$(COMMANDS_DIR) -I$(THIRDPARTY_DIR) -I$(API_DIR) -I$(STORAGE_DIR) -I$(RENDER_DIR) $(MODULE_INCLUDES)
 
 all: $(TARGET)
 
@@ -109,9 +99,26 @@ install: $(TARGET)
 
 # Info
 info:
-	@echo "Build type: $(BUILD)"
-	@echo "Warnings:   $(WARNINGS)"
-	@echo "ASAN:       $(ASAN)"
-	@echo "UBSAN:      $(UBSAN)"
+	@echo "Build type:     $(BUILD)"
+	@echo "Warnings:       $(WARNINGS)"
+	@echo "ASAN:           $(ASAN)"
+	@echo "UBSAN:          $(UBSAN)"
+	@echo "Module export:  $(MODULE_EXPORT)"
 
-.PHONY: info all clean install
+# Unit tests
+UNIT_TEST_SRC := \
+	tests/unit/test_libtatr.c \
+	$(CORE_SRC) $(API_SRC) $(STORAGE_SRC) $(RENDER_SRC) $(MODULES_CORE_SRC) $(THIRDPARTY_SRC)
+
+test-unit:
+	@mkdir -p $(BUILD_DIR)
+	$(CC) $(filter-out $(MODULE_DEFS),$(CFLAGS)) $(INCLUDES) $(UNIT_TEST_SRC) -o $(BUILD_DIR)/run_unit_tests
+	@$(BUILD_DIR)/run_unit_tests
+
+# Prints the fully-resolved set of sources this Makefile will compile,
+# one per line, sorted. Used by scripts/check-build-drift.sh to compare
+# against CMakeLists.txt's resolved set.
+print-sources:
+	@for f in $(sort $(ALL_SRC)); do echo $$f; done
+
+.PHONY: info all clean install test-unit print-sources

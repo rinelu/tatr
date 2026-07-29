@@ -1,8 +1,18 @@
 # tatr
 
 [![CI](https://github.com/rinelu/tatr/actions/workflows/tatr.yaml/badge.svg)](https://github.com/rinelu/tatr/actions)
+[![License: MIT / Unlicense](https://img.shields.io/badge/license-MIT%20%2F%20Unlicense-blue.svg)](LICENSE)
 
-**tatr** is a small, file-based issue tracker.  
+**tatr** is a small, fast, file-based issue tracker that lives in your repo.
+Issues are plain text files that diff, grep, and merge like any other file you already version with git.
+
+> **Demo:** _coming soon_ - a short terminal recording will go here.
+
+## Why tatr
+
+- Every issue is a human-readable file. Read it with `cat`, grep across your backlog, review it in a pull request diff.
+- Works entirely offline, scoped to whatever git repo (or directory) you run it in.
+- Issues live next to your code, travel with `git clone`, and merge with the same tooling you already use.
 
 ## Quick start
 
@@ -51,9 +61,35 @@ delete      Delete an issue
 attach      Attach files
 attachls    List attachments
 detach      Remove attachment
+comment     Add a comment to an issue
 search      Search issues
-export      Export (markdown/json)
+status      Show aggregate counts (open/closed, by priority, by tag)
+log         Show the event log
+config      Get/set configuration values
+export      Export an issue (markdown/json)
 ```
+
+Run `tatr <command> --help` for flags on any individual command.
+
+## Configuration
+
+```sh
+tatr config --keys     # list all valid keys
+tatr config author "some1"
+tatr config default_priority high
+```
+
+| Key | Description | Default |
+|---|---|---|
+| `author` | Default author name for comments and log entries | `unknown` |
+| `default_status` | Default status for new issues | `open` |
+| `default_priority` | Default priority for new issues | `normal` |
+| `default_editor` | Editor to use instead of `$VISUAL`/`$EDITOR` | _(unset)_ |
+| `log.limit` | Default `--limit` for `tatr log` | `0` (no limit) |
+| `list.show_closed` | Show closed issues in `tatr list` by default | `false` |
+| `list.limit` | Default `--limit` for `tatr list` | `0` (no limit) |
+
+Config is layered: a local, repo-scoped config overrides a global, user-scoped one.
 
 ## Build
 
@@ -111,10 +147,22 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake -S . -B build \
     -DTATR_ENABLE_WARNINGS=ON \
     -DTATR_ENABLE_ASAN=ON \
-    -DTATR_ENABLE_UBSAN=ON
+    -DTATR_ENABLE_UBSAN=ON \
+    -DTATR_MODULE_EXPORT=ON
 ```
 ### Install
 ```sh
 cmake --install build
 ```
 </details>
+
+Tests run via `ctest` or `make -C tests`.
+
+## Contributing
+
+Issues and PRs are welcome. See [`src/modules/README.md`](src/modules/README.md) if
+you're adding a new optional feature modules.
+
+## License
+
+See [`LICENSE`](LICENSE) for full text.

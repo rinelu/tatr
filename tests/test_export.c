@@ -20,7 +20,7 @@ static void test_export_markdown_stdout(void)
     char cmd[128];
     snprintf(cmd, sizeof(cmd), "export %s", issue_id);
 
-    TatrResult r = tatr(cmd);
+    Tatr_Result r = tatr(cmd);
     ASSERT_CMD_OK(r);
 
     ASSERT_OUT_CONTAINS(r, "# export test");
@@ -33,7 +33,7 @@ static void test_export_json_stdout(void)
     char cmd[128];
     snprintf(cmd, sizeof(cmd), "export %s --format json", issue_id);
 
-    TatrResult r = tatr(cmd);
+    Tatr_Result r = tatr(cmd);
     ASSERT_CMD_OK(r);
 
     ASSERT_OUT_CONTAINS(r, "\"title\": \"export test\"");
@@ -46,7 +46,7 @@ static void test_export_json_minified(void)
     char cmd[128];
     snprintf(cmd, sizeof(cmd), "export %s --format json --minify", issue_id);
 
-    TatrResult r = tatr(cmd);
+    Tatr_Result r = tatr(cmd);
     ASSERT_CMD_OK(r);
 
     // minified JSON should NOT contain indentation spaces
@@ -58,7 +58,7 @@ static void test_export_to_file(void)
     char cmd[256];
     snprintf(cmd, sizeof(cmd), "export %s --format json --output out.json", issue_id);
 
-    TatrResult r = tatr(cmd);
+    Tatr_Result r = tatr(cmd);
     ASSERT_CMD_OK(r);
 
     ASSERT_PATH_EXISTS("out.json");
@@ -73,7 +73,7 @@ static void test_export_invalid_format(void)
     char cmd[128];
     snprintf(cmd, sizeof(cmd), "export %s --format xml", issue_id);
 
-    TatrResult r = tatr(cmd);
+    Tatr_Result r = tatr(cmd);
     ASSERT_CMD_FAIL(r);
 
     ASSERT_OUT_CONTAINS(r, "invalid value");
@@ -82,7 +82,7 @@ static void test_export_invalid_format(void)
 
 static void test_export_list_formats(void)
 {
-    TatrResult r = tatr("export --list-format");
+    Tatr_Result r = tatr("export --list-format");
     ASSERT_CMD_OK(r);
 
     ASSERT_OUT_CONTAINS(r, "markdown");
@@ -91,14 +91,14 @@ static void test_export_list_formats(void)
 
 static void test_export_unknown_issue_fails(void)
 {
-    TatrResult r = tatr("export bad_id");
+    Tatr_Result r = tatr("export bad_id");
     ASSERT_CMD_FAIL(r);
     ASSERT_OUT_CONTAINS(r, "not found");
 }
 
 static void test_export_missing_id_fails(void)
 {
-    TatrResult r = tatr("export");
+    Tatr_Result r = tatr("export");
     ASSERT_CMD_FAIL(r);
 }
 
@@ -107,7 +107,7 @@ static void test_export_tags_rendered_json(void)
     char cmd[128];
     snprintf(cmd, sizeof(cmd), "export %s --format json", issue_id);
 
-    TatrResult r = tatr(cmd);
+    Tatr_Result r = tatr(cmd);
     ASSERT_CMD_OK(r);
 
     ASSERT_OUT_CONTAINS(r, "\"bug\"");
@@ -119,7 +119,7 @@ static void test_export_comments_parsed(void)
     char cmd[128];
     snprintf(cmd, sizeof(cmd), "export %s --format json", issue_id);
 
-    TatrResult r = tatr(cmd);
+    Tatr_Result r = tatr(cmd);
     ASSERT_CMD_OK(r);
 
     ASSERT_OUT_CONTAINS(r, "\"date\": \"2024\"");

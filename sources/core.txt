@@ -1,0 +1,9 @@
+src/core/issue.c
+src/core/ui.c
+src/core/editor.c
+src/core/tatrlog.c
+src/core/codec.c
+src/core/mime.c
+src/core/config.c
+src/core/global.c
+src/core/schema.c

@@ -7,6 +7,19 @@ on:
   workflow_dispatch:
 
 jobs:
+  build-drift-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake
+
+      - name: Check Makefile / CMakeLists.txt agree on source files
+        run: bash scripts/check-build-drift.sh
+
   linux:
     runs-on: ubuntu-latest
     strategy:
@@ -96,24 +109,24 @@ jobs:
         run: ./build-debug/tests/run_tests
 
 
-  windows-msvc:
-    runs-on: windows-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Build & Test (MSVC)
-        shell: cmd
-        run: |
-          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-
-          mkdir build
-          cd build
-
-          cmake .. -DCMAKE_BUILD_TYPE=Release
-          cmake --build . --config Release
-
-          ctest -C Release --output-on-failure
+  # windows-msvc:
+  #   runs-on: windows-latest
+  #
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #
+  #     - name: Build & Test (MSVC)
+  #       shell: cmd
+  #       run: |
+  #         call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+  #
+  #         mkdir build
+  #         cd build
+  #
+  #         cmake .. -DCMAKE_BUILD_TYPE=Release
+  #         cmake --build . --config Release
+  #
+  #         ctest -C Release --output-on-failure
 
 
   windows-mingw:

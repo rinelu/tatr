@@ -7,7 +7,6 @@
 #include <stdbool.h>
 #include <signal.h>
 #include <assert.h>
-#include <errno.h>
 
 #ifdef _WIN32
 #   define WIN32_LEAN_AND_MEAN
@@ -27,13 +26,12 @@
 #   define TF_WIN32 0
 #endif
 
-#include "../libs/fs.h"
-#include "../libs/astring.h"
-#include "../libs/temp.h"
-#include "../libs/array.h"
+#include "fs.h"
+#include "astring.h"
+#include "temp.h"
+#include "array.h"
 
-#define LOG_GLOBAL
-#include "../libs/log.h"
+#include "log.h"
 
 #define TF_RED    "\x1b[31m"
 #define TF_GREEN  "\x1b[32m"
@@ -191,8 +189,7 @@ static inline bool tf_mkdir(const char *path)       { return fs_mkdir_force(path
 
 #define TF_FAIL_MSG(fmt, ...) \
     do { \
-        log_msg(TF_RED "[ FAIL ]" TF_RESET " %s:%d  " fmt, \
-                __FILE__, __LINE__, ##__VA_ARGS__); \
+        log_msg(TF_RED "[ FAIL ]" TF_RESET " %s:%d  " fmt, __FILE__, __LINE__, ##__VA_ARGS__); \
         _tf.tests_failed++; return; \
     } while(0)
 
@@ -300,10 +297,7 @@ static inline void tf__run_one(TF_TestCase *t, const char *sandbox_path)
     if (t->teardown)                 t->teardown();
 
     bool passed = (_tf.tests_failed == prev);
-    if (passed)
-        log_msg(TF_GREEN "[ SUCCESS ]" TF_RESET " [%s] %s", t->suite, t->name);
-    else
-        log_msg(TF_RED   "[ FAIL ]"    TF_RESET " [%s] %s", t->suite, t->name);
+    if (!passed) log_msg(TF_RED   "[ FAIL ]"    TF_RESET " [%s] %s", t->suite, t->name);
 
     tf_sandbox_exit(passed || delete_fail_tmp);
 }

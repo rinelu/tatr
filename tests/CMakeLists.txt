@@ -18,7 +18,7 @@ add_executable(run_tests
 
 target_include_directories(run_tests
     PRIVATE
-        ${CMAKE_SOURCE_DIR}/libs
+        ${CMAKE_SOURCE_DIR}/src/thirdparty
         ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
@@ -46,8 +46,7 @@ endif()
 
 # --- Test --- 
 
-enable_testing()
+add_test(NAME tatr_tests COMMAND run_tests)
 
-add_test(NAME tatr_tests
-    COMMAND $<TARGET_FILE:run_tests>
-)
+# ---- Unit tests (libtatr only) ----
+add_subdirectory(unit)

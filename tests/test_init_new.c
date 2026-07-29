@@ -2,7 +2,7 @@
 
 static void test_init_creates_directory(void)
 {
-    TatrResult r = tatr("init");
+    Tatr_Result r = tatr("init");
     ASSERT_CMD_OK(r);
     ASSERT_PATH_EXISTS(".tatr");
     ASSERT_PATH_EXISTS(".tatr/issues");
@@ -19,7 +19,7 @@ static void test_init_writes_default_config(void)
 static void test_init_fails_if_already_exists(void)
 {
     tatr("init");
-    TatrResult r = tatr("init");
+    Tatr_Result r = tatr("init");
     ASSERT_CMD_FAIL(r);
     ASSERT_OUT_CONTAINS(r, "already exists");
 }
@@ -27,15 +27,52 @@ static void test_init_fails_if_already_exists(void)
 static void test_init_force_reinitializes(void)
 {
     tatr("init");
-    TatrResult r = tatr("init --force");
+    Tatr_Result r = tatr("init --force");
     ASSERT_CMD_OK(r);
 }
 
 static void test_init_short_flag_force(void)
 {
     tatr("init");
-    TatrResult r = tatr("init -f");
+    Tatr_Result r = tatr("init -f");
     ASSERT_CMD_OK(r);
+}
+
+static void test_init_writes_schema_version(void)
+{
+    tatr("init");
+    const char *v = tf_read_file(".tatr/VERSION");
+    ASSERT_NOT_NULL(v);
+    ASSERT_CONTAINS(v, "1");
+}
+
+static void test_legacy_repo_is_migrated_on_first_use(void)
+{
+    tatr("init");
+    remove(".tatr/VERSION"); /* simulate a pre-schema-versioning repo */
+
+    Tatr_Result r = tatr("new -t \"legacy repo issue\"");
+    ASSERT_CMD_OK(r);
+    ASSERT_OUT_CONTAINS(r, "migrated repo schema 0 -> 1");
+
+    const char *v = tf_read_file(".tatr/VERSION");
+    ASSERT_NOT_NULL(v);
+    ASSERT_CONTAINS(v, "1");
+
+    /* second command against the now-current repo: no migration noise */
+    Tatr_Result r2 = tatr("list --no-header");
+    ASSERT_CMD_OK(r2);
+    ASSERT_OUT_NOT_CONTAINS(r2, "migrated");
+}
+
+static void test_future_schema_version_is_rejected(void)
+{
+    tatr("init");
+    tf_write_file(".tatr/VERSION", "999");
+
+    Tatr_Result r = tatr("list");
+    ASSERT_CMD_FAIL(r);
+    ASSERT_OUT_CONTAINS(r, "newer than this build of tatr understands");
 }
 
 static void setup_repo(void) { tatr_init(); }
@@ -105,14 +142,14 @@ static void test_new_custom_status(void)
 
 static void test_new_invalid_priority_rejected(void)
 {
-    TatrResult r = tatr("new --title 'bad' --priority ultra");
+    Tatr_Result r = tatr("new --title 'bad' --priority ultra");
     ASSERT_CMD_FAIL(r);
     ASSERT_OUT_CONTAINS(r, "invalid value");
 }
 
 static void test_new_invalid_status_rejected(void)
 {
-    TatrResult r = tatr("new --title 'bad' --status limbo");
+    Tatr_Result r = tatr("new --title 'bad' --status limbo");
     ASSERT_CMD_FAIL(r);
     ASSERT_OUT_CONTAINS(r, "invalid value");
 }
@@ -162,7 +199,7 @@ static void test_new_has_created_timestamp(void)
 
 static void test_new_without_repo_fails(void)
 {
-    TatrResult r = tatr("new --title 'no repo'");
+    Tatr_Result r = tatr("new --title 'no repo'");
     ASSERT_CMD_FAIL(r);
 }
 
@@ -187,6 +224,9 @@ void suite_init_new(void)
     RUN_TEST(test_init_fails_if_already_exists);
     RUN_TEST(test_init_force_reinitializes);
     RUN_TEST(test_init_short_flag_force);
+    RUN_TEST(test_init_writes_schema_version);
+    RUN_TEST(test_legacy_repo_is_migrated_on_first_use);
+    RUN_TEST(test_future_schema_version_is_rejected);
 
     SUITE("new");
     RUN_TEST(test_new_without_repo_fails);

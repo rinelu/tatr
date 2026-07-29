@@ -25,13 +25,13 @@ typedef struct {
     String_Builder *out;
     String_Builder *err;
     int exit_code;
-} TatrResult;
+} Tatr_Result;
 
 #ifdef _WIN32
 
-static inline TatrResult tatr(const char *args)
+static inline Tatr_Result tatr(const char *args)
 {
-    TatrResult res = {0};
+    Tatr_Result res = {0};
     res.out = tf_sb_new();
     res.err = tf_sb_new();
 
@@ -149,9 +149,9 @@ static inline TatrResult tatr(const char *args)
 
 #else  // POSIX
 
-static inline TatrResult tatr(const char *args)
+static inline Tatr_Result tatr(const char *args)
 {
-    TatrResult res = {0};
+    Tatr_Result res = {0};
     res.out = tf_sb_new();
     res.err = tf_sb_new();
 
@@ -238,7 +238,7 @@ static inline TatrResult tatr(const char *args)
 // Helpers
 // ---------------------------------------------------------------------------
 
-static inline const char *tatr_combined(TatrResult *r)
+static inline const char *tatr_combined(Tatr_Result *r)
 {
     String_Builder *sb = tf_sb_new();
     sb_append_buf(sb, r->out->items, r->out->count);
@@ -249,7 +249,7 @@ static inline const char *tatr_combined(TatrResult *r)
 
 #define tatr_init() \
     do { \
-        TatrResult _ri = tatr("init"); \
+        Tatr_Result _ri = tatr("init"); \
         if (_ri.exit_code != 0) \
             TF_FAIL_MSG("tatr init failed (exit %d):\n  out: %s\n  err: %s", \
                         _ri.exit_code, _ri.out->items, _ri.err->items); \
@@ -265,7 +265,7 @@ static inline bool tatr_new_issue(const char *extra, char *out_id, size_t len)
     }
     sb_append_null(cmd);
 
-    TatrResult r = tatr(cmd->items);
+    Tatr_Result r = tatr(cmd->items);
     if (r.exit_code != 0) return false;
 
     const char *pfx = "Created issue ";
