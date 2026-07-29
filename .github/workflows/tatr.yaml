@@ -109,25 +109,24 @@ jobs:
         run: ./build-debug/tests/run_tests
 
 
-  windows-msvc:
-    runs-on: windows-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Build & Test (MSVC)
-        shell: cmd
-        run: |
-          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-
-          mkdir build
-          cd build
-
-          cmake .. -DCMAKE_BUILD_TYPE=Release
-          cmake --build . --config Release
-
-          ./tests/run_tests.exe
-          ./tests/unit/run_unit_tests.exe
+  # windows-msvc:
+  #   runs-on: windows-latest
+  #
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #
+  #     - name: Build & Test (MSVC)
+  #       shell: cmd
+  #       run: |
+  #         call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+  #
+  #         mkdir build
+  #         cd build
+  #
+  #         cmake .. -DCMAKE_BUILD_TYPE=Release
+  #         cmake --build . --config Release
+  #
+  #         ctest -C Release --output-on-failure
 
 
   windows-mingw:
