@@ -46,9 +46,7 @@ endif()
 
 # --- Test --- 
 
-add_test(NAME tatr_tests
-    COMMAND $<TARGET_FILE:run_tests>
-)
+add_test(NAME tatr_tests COMMAND run_tests)
 
 # ---- Unit tests (libtatr only) ----
 add_subdirectory(unit)
